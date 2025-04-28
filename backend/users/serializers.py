@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from users.models import User
-from recipes.models import Follow
+from users.models import Follow
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
