@@ -21,3 +21,10 @@ class CustomUserViewSet(UserViewSet):
             authors, many=True, context={'request': request}
         )
         return Response(serializer.data)
+
+
+class CurrentUserViewSet(UserViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
