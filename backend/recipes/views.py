@@ -1,9 +1,10 @@
 from rest_framework import viewsets
-from recipes.models import Ingredient, Tag, Recipe, Favorite
+from recipes.models import Ingredient, Tag, Recipe, Favorite, ShoppingCart
 from recipes.serializers import (
-    IngredientSerializer, TagSerializer, RecipeSerializer, FavoriteSerializer
+    IngredientSerializer, TagSerializer, RecipeSerializer, FavoriteSerializer,
+    ShoppingCartSerializer
 )
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import permissions
 
 
@@ -41,6 +42,15 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     queryset = Favorite.objects.all()
     serializer_class = FavoriteSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ShoppingCartViewSet(viewsets.ModelViewSet):
+    queryset = ShoppingCart.objects.all()
+    serializer_class = ShoppingCartSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

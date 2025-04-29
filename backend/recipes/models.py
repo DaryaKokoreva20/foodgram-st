@@ -1,5 +1,4 @@
 from django.db import models
-from users.models import User
 from django.conf import settings
 
 
@@ -117,7 +116,9 @@ class Favorite(models.Model):
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='shopping_cart'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='shopping_cart'
     )
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name='in_shopping_cart'
@@ -129,3 +130,6 @@ class ShoppingCart(models.Model):
                 fields=['user', 'recipe'], name='unique_shopping_cart'
             )
         ]
+
+    def __str__(self):
+        return f"{self.user} added {self.recipe} to cart"

@@ -2,7 +2,8 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from users.views import CustomUserViewSet, CurrentUserViewSet, FollowViewSet
 from recipes.views import (
-    IngredientViewSet, TagViewSet, RecipeViewSet, FavoriteViewSet
+    IngredientViewSet, TagViewSet, RecipeViewSet, FavoriteViewSet,
+    ShoppingCartViewSet
 )
 
 
@@ -26,6 +27,9 @@ recipes_router.register('recipes', RecipeViewSet, basename='recipes')
 favorites_router = DefaultRouter()
 favorites_router.register('favorites', FavoriteViewSet, basename='favorites')
 
+cart_router = DefaultRouter()
+cart_router.register('cart', ShoppingCartViewSet, basename='cart')
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -34,6 +38,7 @@ urlpatterns = [
     path('', include(tags_router.urls)),
     path('', include(recipes_router.urls)),
     path('', include(favorites_router.urls)),
+    path('', include(cart_router.urls)),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
     path(
