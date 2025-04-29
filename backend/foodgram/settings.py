@@ -141,6 +141,7 @@ DJOSER = {
         'user_create': 'users.serializers.CustomUserCreateSerializer',
         'current_user': 'users.serializers.CustomUserSerializer',
     },
+    'SET_PASSWORD_RETYPE': True,
 }
 
 REST_FRAMEWORK = {

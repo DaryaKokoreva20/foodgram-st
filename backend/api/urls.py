@@ -5,6 +5,7 @@ from recipes.views import (
     IngredientViewSet, TagViewSet, RecipeViewSet, FavoriteViewSet,
     ShoppingCartViewSet
 )
+from djoser import views as djoser_views
 
 
 router = DefaultRouter()
@@ -41,6 +42,11 @@ urlpatterns = [
     path('', include(cart_router.urls)),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
+    path(
+        'auth/set_password/',
+        djoser_views.UserViewSet.as_view({'post': 'set_password'}),
+        name='set_password'
+    ),
     path(
         'auth/user/',
         CurrentUserViewSet.as_view({'get': 'retrieve'}),
