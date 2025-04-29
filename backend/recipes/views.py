@@ -1,11 +1,16 @@
 from rest_framework import viewsets
-from recipes.models import Ingredient, Tag, Recipe, Favorite, ShoppingCart
+from recipes.models import (
+    Ingredient, Tag, Recipe, Favorite, ShoppingCart, RecipeIngredient
+)
 from recipes.serializers import (
     IngredientSerializer, TagSerializer, RecipeSerializer, FavoriteSerializer,
     ShoppingCartSerializer
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import permissions
+from django.http import HttpResponse
+from django.db.models import Sum
+from rest_framework.decorators import action
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
@@ -54,3 +59,30 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def download(self, request):
+        recipes_in_cart = ShoppingCart.objects.filter(
+            user=request.user
+        ).values_list('recipe', flat=True)
+
+        ingredients = RecipeIngredient.objects.filter(
+            recipe__in=recipes_in_cart
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).annotate(amount=Sum('amount'))
+
+        lines = []
+        for item in ingredients:
+            name = item['ingredient__name']
+            unit = item['ingredient__measurement_unit']
+            amount = item['amount']
+            lines.append(f'{name} ({unit}) — {amount}')
+
+        content = '\n'.join(lines)
+        response = HttpResponse(content, content_type='text/plain')
+        response['Content-Disposition'] = (
+            'attachment; filename="shopping_list.txt"'
+        )
+        return response
