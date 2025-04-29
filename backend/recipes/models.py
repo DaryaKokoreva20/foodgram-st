@@ -26,6 +26,11 @@ class Tag(models.Model):
     color = models.CharField(max_length=7)  # (#48B64E)
     slug = models.SlugField(max_length=100, unique=True)
 
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
     def __str__(self):
         return self.name
 
