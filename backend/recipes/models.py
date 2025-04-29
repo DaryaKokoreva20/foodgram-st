@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from django.conf import settings
 
 
 class Ingredient(models.Model):
@@ -37,11 +38,17 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='recipes'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='recipes'
     )
     name = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='recipes/images/')
-    text = models.TextField()
+    image = models.ImageField(
+        upload_to='recipes/images/',
+        null=True,
+        blank=True
+    )
+    description = models.TextField()
     ingredients = models.ManyToManyField(
         Ingredient, through='RecipeIngredient', related_name='recipes'
     )
@@ -50,22 +57,41 @@ class Recipe(models.Model):
 
     pub_date = models.DateTimeField(auto_now_add=True)
 
+    tags = models.ManyToManyField(
+        'Tag',
+        related_name='recipes'
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
+
     def __str__(self):
         return self.name
 
 
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredients'
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='ingredient_recipes'
+    )
     amount = models.PositiveIntegerField()
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'ingredient'],
-                name='unique_ingredient_in_recipe'
+                name='unique_recipe_ingredient'
             )
         ]
+
+    def __str__(self):
+        return f"{self.ingredient.name} — {self.amount}"
 
 
 class Favorite(models.Model):
