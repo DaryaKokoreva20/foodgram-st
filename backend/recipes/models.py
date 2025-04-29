@@ -96,7 +96,9 @@ class RecipeIngredient(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='favorites'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='favorites'
     )
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name='favorited_by'
@@ -108,6 +110,9 @@ class Favorite(models.Model):
                 fields=['user', 'recipe'], name='unique_favorite'
             )
         ]
+
+    def __str__(self):
+        return f"{self.user} favorited {self.recipe}"
 
 
 class ShoppingCart(models.Model):

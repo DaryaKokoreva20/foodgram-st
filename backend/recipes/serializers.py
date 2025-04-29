@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from recipes.models import Ingredient, Tag, Recipe, RecipeIngredient
+from recipes.models import (
+    Ingredient, Tag, Recipe, RecipeIngredient, Favorite
+)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -80,3 +82,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             )
 
         return recipe
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ('id', 'user', 'recipe')
+        read_only_fields = ('user',)

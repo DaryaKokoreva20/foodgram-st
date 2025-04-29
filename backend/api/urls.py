@@ -1,7 +1,9 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from users.views import CustomUserViewSet, CurrentUserViewSet, FollowViewSet
-from recipes.views import IngredientViewSet, TagViewSet, RecipeViewSet
+from recipes.views import (
+    IngredientViewSet, TagViewSet, RecipeViewSet, FavoriteViewSet
+)
 
 
 router = DefaultRouter()
@@ -21,6 +23,9 @@ tags_router.register('tags', TagViewSet, basename='tags')
 recipes_router = DefaultRouter()
 recipes_router.register('recipes', RecipeViewSet, basename='recipes')
 
+favorites_router = DefaultRouter()
+favorites_router.register('favorites', FavoriteViewSet, basename='favorites')
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -28,6 +33,7 @@ urlpatterns = [
     path('', include(ingredients_router.urls)),
     path('', include(tags_router.urls)),
     path('', include(recipes_router.urls)),
+    path('', include(favorites_router.urls)),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
     path(
