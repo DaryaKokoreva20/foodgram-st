@@ -44,9 +44,11 @@ INSTALLED_APPS = [
     'users',
     'recipes',
     'api',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -146,7 +148,7 @@ DJOSER = {
         'user_create': 'users.serializers.CustomUserCreateSerializer',
         'current_user': 'users.serializers.CustomUserSerializer',
     },
-    'SET_PASSWORD_RETYPE': True,
+    'SET_PASSWORD_RETYPE': False,
 }
 
 REST_FRAMEWORK = {
@@ -157,3 +159,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
 }
+
+STATIC_ROOT = '/app/static/'
+MEDIA_ROOT = '/app/media/'
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'backend', 'nginx']
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+]
