@@ -11,6 +11,7 @@ from rest_framework import permissions
 from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
@@ -23,6 +24,8 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    filter_backends = [SearchFilter]
+    search_fields = ['^name']
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny]
