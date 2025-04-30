@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 
 
 class User(AbstractUser):
@@ -28,6 +29,16 @@ class Follow(models.Model):
                 fields=['user', 'author'], name='unique_follow'
             )
         ]
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+    def clean(self):
+        if self.user == self.author:
+            raise ValidationError('Нельзя подписаться на самого себя.')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.user} follows {self.author}'

@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator
 
 
 class Ingredient(models.Model):
@@ -52,14 +53,11 @@ class Recipe(models.Model):
         Ingredient, through='RecipeIngredient', related_name='recipes'
     )
     tags = models.ManyToManyField(Tag, related_name='recipes')
-    cooking_time = models.PositiveIntegerField()
+    cooking_time = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)]
+    )
 
     pub_date = models.DateTimeField(auto_now_add=True)
-
-    tags = models.ManyToManyField(
-        'Tag',
-        related_name='recipes'
-    )
 
     class Meta:
         ordering = ['-pub_date']
@@ -79,7 +77,7 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         related_name='ingredient_recipes'
     )
-    amount = models.PositiveIntegerField()
+    amount = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
         constraints = [
