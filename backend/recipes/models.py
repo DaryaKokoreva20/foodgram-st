@@ -44,15 +44,13 @@ class Recipe(models.Model):
     )
     name = models.CharField(max_length=200)
     image = models.ImageField(
-        upload_to='recipes/images/',
-        null=True,
-        blank=True
+        upload_to='recipes/images/'
     )
-    description = models.TextField()
+    text = models.TextField()
     ingredients = models.ManyToManyField(
         Ingredient, through='RecipeIngredient', related_name='recipes'
     )
-    tags = models.ManyToManyField(Tag, related_name='recipes')
+    tags = models.ManyToManyField(Tag, related_name='recipes', blank=True)
     cooking_time = models.PositiveIntegerField(
         validators=[MinValueValidator(1)]
     )

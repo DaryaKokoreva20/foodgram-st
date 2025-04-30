@@ -40,7 +40,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = serializers.SerializerMethodField()
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=Tag.objects.all()
+        queryset=Tag.objects.all(),
+        required=False
     )
     author = serializers.StringRelatedField(read_only=True)
 
@@ -51,15 +52,12 @@ class RecipeSerializer(serializers.ModelSerializer):
             'author',
             'name',
             'image',
-            'description',
+            'text',
             'cooking_time',
             'ingredients',
             'tags',
             'pub_date'
         )
-        extra_kwargs = {
-            'image': {'required': False}
-        }
 
     def get_ingredients(self, obj):
         ingredients = RecipeIngredient.objects.filter(recipe=obj)
@@ -75,6 +73,21 @@ class RecipeSerializer(serializers.ModelSerializer):
         seen = set()
         for item in ingredients_data:
             ingredient_id = item['id']
+            amount = item.get('amount')
+            if not Ingredient.objects.filter(id=ingredient_id).exists():
+                raise ValidationError({
+                    'ingredients': (
+                        f'Ингредиент с id={ingredient_id} не существует.'
+                    )
+                })
+            if amount is None or int(amount) < 1:
+                raise ValidationError({
+                    'ingredients': (
+                        f'У ингредиента с id={ingredient_id} '
+                        'количество должно быть ≥ 1.'
+                    )
+                })
+
             if ingredient_id in seen:
                 raise ValidationError(
                     {'ingredients': 'Ингредиенты не должны повторяться.'}
@@ -85,8 +98,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         ingredients_data = self.initial_data.get('ingredients')
-        tags = validated_data.pop('tags')
-        validated_data.pop('author', None)  # Убираем дублирование автора
+        tags = validated_data.pop('tags', [])
+        validated_data.pop('author', None)
 
         user = self.context['request'].user
 
@@ -103,13 +116,22 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         return recipe
 
+    def create_ingredients(self, recipe, ingredients_data):
+        for ingredient in ingredients_data:
+            ingredient_id = ingredient['id']
+            amount = ingredient['amount']
+            recipe.ingredients.add(
+                ingredient_id,
+                through_defaults={'amount': amount}
+            )
+
     def update(self, instance, validated_data):
         ingredients_data = self.initial_data.get('ingredients')
         tags = validated_data.pop('tags', None)
 
         instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get(
-            'description', instance.description
+        instance.text = validated_data.get(
+            'text', instance.text
         )
         instance.cooking_time = validated_data.get(
             'cooking_time', instance.cooking_time
