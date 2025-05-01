@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-@&l*3q75lsu#)*d4lnmydz07j0(6tshh!*tdjl7r8vg7wn0z#t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -151,6 +151,7 @@ DJOSER = {
         'user': 'users.serializers.CustomUserSerializer',
         'user_create': 'users.serializers.CustomUserCreateSerializer',
         'current_user': 'users.serializers.CustomUserSerializer',
+        'set_password': 'users.serializers.CustomSetPasswordSerializer',
     },
     'SET_PASSWORD_RETYPE': False,
 }

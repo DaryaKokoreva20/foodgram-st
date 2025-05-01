@@ -5,15 +5,34 @@ from rest_framework.response import Response
 
 from users.models import Follow
 from users.models import User
-from users.serializers import CustomUserSerializer
+from users.serializers import (
+    CustomUserSerializer, CustomSetPasswordSerializer
+)
 
 from rest_framework import viewsets, status
 from django.shortcuts import get_object_or_404
+from users.serializers import CustomUserCreateSerializer
 
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CustomUserCreateSerializer
+        if self.action == 'set_password':
+            return CustomSetPasswordSerializer
+        return CustomUserSerializer
+
+    @action(["post"], detail=False, permission_classes=[IsAuthenticated])
+    def set_password(self, request, *args, **kwargs):
+        serializer = CustomSetPasswordSerializer(
+            data=request.data, context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):

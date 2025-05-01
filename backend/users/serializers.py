@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from users.models import User
 from users.models import Follow
+from djoser.serializers import (
+    UserCreateSerializer as DjoserUserCreateSerializer,
+    SetPasswordSerializer
+)
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -24,25 +28,30 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return False
 
 
-class CustomUserCreateSerializer(serializers.ModelSerializer):
-    class Meta:
+class CustomUserCreateSerializer(DjoserUserCreateSerializer):
+    class Meta(DjoserUserCreateSerializer.Meta):
         model = User
         fields = (
-            'email', 'username',
+            'id', 'email', 'username',
             'first_name', 'last_name',
             'password'
         )
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True, 'required': True}
         }
 
-    def create(self, validated_data):
-        user = User(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name']
-        )
-        user.set_password(validated_data['password'])
+
+class CustomSetPasswordSerializer(SetPasswordSerializer):
+    current_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        password = self.validated_data['new_password']
+        user.set_password(password)
         user.save()
         return user
+
+    def validate(self, attrs):
+        print("VALIDATING:", attrs)
+        return super().validate(attrs)
