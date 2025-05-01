@@ -136,6 +136,7 @@ SIMPLE_JWT = {
 STATIC_URL = '/backend_static/'
 STATIC_ROOT = '/app/static'
 
+MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media/'
 
 # Default primary key field type
