@@ -4,6 +4,7 @@ from recipes.models import (
 )
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from users.serializers import CustomUserSerializer
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -43,7 +44,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         required=False
     )
-    author = serializers.StringRelatedField(read_only=True)
+    author = CustomUserSerializer(read_only=True)
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Recipe

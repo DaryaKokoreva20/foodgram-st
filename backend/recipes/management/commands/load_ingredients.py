@@ -9,9 +9,7 @@ class Command(BaseCommand):
     help = 'Загружает ингредиенты из ../data/ingredients.json'
 
     def handle(self, *args, **kwargs):
-        file_path = Path(
-            settings.BASE_DIR
-        ).parent / 'data' / 'ingredients.json'
+        file_path = Path(settings.BASE_DIR) / 'data' / 'ingredients.json'
 
         with open(file_path, encoding='utf-8') as f:
             data = json.load(f)
