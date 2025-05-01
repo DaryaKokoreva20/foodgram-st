@@ -5,17 +5,31 @@ from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer,
     SetPasswordSerializer
 )
+import base64
+import uuid
+from django.core.files.base import ContentFile
+
+
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+            id = uuid.uuid4().hex
+            data = ContentFile(base64.b64decode(imgstr), name=f'{id}.{ext}')
+        return super().to_internal_value(data)
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
+    avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = User
         fields = (
             'id', 'email', 'username',
             'first_name', 'last_name',
-            'is_subscribed'
+            'is_subscribed', 'avatar'
         )
 
     def get_is_subscribed(self, obj):

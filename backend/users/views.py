@@ -44,6 +44,21 @@ class CustomUserViewSet(UserViewSet):
         )
         return Response(serializer.data)
 
+    @action(
+        detail=False,
+        methods=['put'],
+        url_path='me/avatar',
+        permission_classes=[IsAuthenticated],
+    )
+    def update_avatar(self, request):
+        user = self.request.user
+        serializer = CustomUserSerializer(
+            user, data=request.data, partial=True, context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class CurrentUserViewSet(UserViewSet):
     permission_classes = [IsAuthenticated]
