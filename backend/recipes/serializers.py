@@ -46,6 +46,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     )
     author = CustomUserSerializer(read_only=True)
     image = serializers.ImageField(required=False, allow_null=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -58,7 +60,9 @@ class RecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
             'ingredients',
             'tags',
-            'pub_date'
+            'pub_date',
+            'is_favorited',
+            'is_in_shopping_cart'
         )
 
     def get_ingredients(self, obj):
@@ -150,12 +154,29 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         return instance
 
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            return Favorite.objects.filter(user=user, recipe=obj).exists()
+        return False
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            return ShoppingCart.objects.filter(user=user, recipe=obj).exists()
+        return False
+
 
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
         fields = ('id', 'user', 'recipe')
-        read_only_fields = ('user',)
+        read_only_fields = ('user', 'recipe')
+
+    def create(self, validated_data):
+        request = self.context['request']
+        recipe = self.context['view'].get_object()
+        return Favorite.objects.create(user=request.user, recipe=recipe)
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
@@ -163,3 +184,8 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         model = ShoppingCart
         fields = ('id', 'user', 'recipe')
         read_only_fields = ('user',)
+
+    def create(self, validated_data):
+        request = self.context['request']
+        recipe = self.context['view'].get_object()
+        return ShoppingCart.objects.create(user=request.user, recipe=recipe)

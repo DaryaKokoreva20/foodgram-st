@@ -4,7 +4,7 @@ from recipes.models import (
 )
 from recipes.serializers import (
     IngredientSerializer, TagSerializer, RecipeSerializer,
-    ShoppingCartSerializer
+    ShoppingCartSerializer, FavoriteSerializer
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import permissions
@@ -72,10 +72,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     {'detail': 'Рецепт уже в корзине.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            ShoppingCart.objects.create(user=user, recipe=recipe)
+
+            serializer = ShoppingCartSerializer(
+                data={'recipe': recipe.id},
+                context={'request': request, 'view': self}
+            )
+
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            recipe_serializer = RecipeSerializer(
+                recipe, context={'request': request}
+            )
             return Response(
-                {'detail': 'Рецепт добавлен в корзину.'},
-                status=status.HTTP_201_CREATED
+                recipe_serializer.data, status=status.HTTP_201_CREATED
             )
 
         if request.method == 'DELETE':
@@ -83,10 +93,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 user=user, recipe=recipe
             ).delete()
             if deleted:
-                return Response(
-                    {'detail': 'Рецепт удалён из корзины.'},
-                    status=status.HTTP_204_NO_CONTENT
-                )
+                return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(
                 {'detail': 'Рецепта не было в корзине.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -140,7 +147,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     {'detail': 'Рецепт уже в избранном.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            Favorite.objects.create(user=user, recipe=recipe)
+            serializer = FavoriteSerializer(
+                data={}, context={'request': request, 'view': self}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
             return Response(
                 {'detail': 'Рецепт добавлен в избранное.'},
                 status=status.HTTP_201_CREATED
@@ -159,6 +171,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'detail': 'Рецепта не было в избранном.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+        user = self.request.user
+        params = self.request.query_params
+
+        if params.get('is_favorited') == '1' and user.is_authenticated:
+            queryset = queryset.filter(favorited_by__user=user)
+
+        if params.get('is_in_shopping_cart') == '1' and user.is_authenticated:
+            queryset = queryset.filter(in_shopping_cart__user=user)
+
+        return queryset
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):
