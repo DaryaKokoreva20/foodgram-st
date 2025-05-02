@@ -11,9 +11,10 @@ from rest_framework import permissions
 from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework import status
+from django_filters.rest_framework import FilterSet, CharFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
@@ -25,12 +26,21 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
         return obj.author == request.user
 
 
+class IngredientFilter(FilterSet):
+    name = CharFilter(field_name='name', lookup_expr='istartswith')
+
+    class Meta:
+        model = Ingredient
+        fields = ['name']
+
+
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    filter_backends = [SearchFilter]
-    search_fields = ['^name']
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IngredientFilter
     permission_classes = [AllowAny]
+    pagination_class = None
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):

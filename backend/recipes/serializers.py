@@ -4,12 +4,13 @@ from recipes.models import (
 )
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from utils.fields import Base64ImageField
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = ('id', 'name', 'measurement_unit')
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -44,7 +45,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         required=False
     )
     author = serializers.SerializerMethodField()
-    image = serializers.ImageField(required=False, allow_null=True)
+    image = Base64ImageField(required=False, allow_null=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 

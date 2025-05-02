@@ -13,6 +13,7 @@ from users.serializers import (
 from rest_framework import status
 from users.serializers import CustomUserCreateSerializer
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 
 
 class CustomUserViewSet(UserViewSet):
@@ -42,10 +43,13 @@ class CustomUserViewSet(UserViewSet):
     def subscriptions(self, request):
         follows = Follow.objects.filter(user=request.user)
         authors = [follow.author for follow in follows]
+        paginator = PageNumberPagination()
+        paginator.page_size = 6  # или используй settings.PAGE_SIZE
+        result_page = paginator.paginate_queryset(authors, request)
         serializer = SubscriptionSerializer(
-            authors, many=True, context={'request': request}
+            result_page, many=True, context={'request': request}
         )
-        return Response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
 
     @action(
         detail=False,
@@ -75,7 +79,7 @@ class CustomUserViewSet(UserViewSet):
     def me(self, request):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
-    
+
     @action(
         detail=True,
         methods=['post', 'delete'],
