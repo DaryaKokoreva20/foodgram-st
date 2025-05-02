@@ -193,6 +193,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if params.get('is_in_shopping_cart') == '1' and user.is_authenticated:
             queryset = queryset.filter(in_shopping_cart__user=user)
 
+        if params.get('author'):
+            queryset = queryset.filter(author__id=params.get('author'))
+
         return queryset
 
 

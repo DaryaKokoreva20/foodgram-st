@@ -14,12 +14,33 @@ from rest_framework import status
 from users.serializers import CustomUserCreateSerializer
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny
 
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     lookup_field = 'pk'
     serializer_class = CustomUserSerializer
+
+    permission_classes_by_action = {
+        'retrieve': [AllowAny],
+        'me': [IsAuthenticated],
+        'subscriptions': [IsAuthenticated],
+        'subscribe': [IsAuthenticated],
+        'set_password': [IsAuthenticated],
+        'update_avatar': [IsAuthenticated],
+    }
+
+    def get_permissions(self):
+        try:
+            return [
+                permission(
+                ) for permission in self.permission_classes_by_action[
+                    self.action
+                ]
+            ]
+        except KeyError:
+            return super().get_permissions()
 
     def get_serializer_class(self):
         if self.action == 'create':

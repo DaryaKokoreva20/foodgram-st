@@ -6,7 +6,7 @@ from .models import (
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author')
+    list_display = ('name', 'author', 'favorites_count')
     search_fields = ('name', 'author__username')
     list_filter = ('tags',)
     empty_value_display = '-пусто-'

@@ -24,13 +24,16 @@ class Base64ImageField(serializers.ImageField):
 class CustomUserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     avatar = Base64ImageField(required=False, allow_null=True)
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = (
             'id', 'email', 'username',
             'first_name', 'last_name',
-            'is_subscribed', 'avatar'
+            'is_subscribed', 'avatar',
+            'recipes', 'recipes_count'
         )
 
     def get_is_subscribed(self, obj):
@@ -41,6 +44,19 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 author=obj
             ).exists()
         return False
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.query_params.get('recipes_limit') if request else None
+        queryset = Recipe.objects.filter(author=obj)
+        if limit and limit.isdigit():
+            queryset = queryset[:int(limit)]
+        return RecipeShortSerializer(
+            queryset, many=True, context={'request': request}
+        ).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
 
 
 class CustomUserCreateSerializer(DjoserUserCreateSerializer):

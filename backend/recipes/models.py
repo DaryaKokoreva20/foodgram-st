@@ -55,6 +55,10 @@ class Recipe(models.Model):
 
     pub_date = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def favorites_count(self):
+        return self.favorited_by.count()
+
     class Meta:
         ordering = ['-pub_date']
 
