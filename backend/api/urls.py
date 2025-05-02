@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from users.views import CustomUserViewSet, CurrentUserViewSet, FollowViewSet
+from users.views import CustomUserViewSet
 from recipes.views import (
     IngredientViewSet, TagViewSet, RecipeViewSet,
     ShoppingCartViewSet
@@ -10,9 +10,6 @@ from djoser import views as djoser_views
 
 router = DefaultRouter()
 router.register('users', CustomUserViewSet, basename='users')
-
-follow = DefaultRouter()
-follow.register('users', FollowViewSet, basename='follows')
 
 ingredients_router = DefaultRouter()
 ingredients_router.register(
@@ -31,7 +28,6 @@ cart_router.register('cart', ShoppingCartViewSet, basename='cart')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('', include(follow.urls)),
     path('', include(ingredients_router.urls)),
     path('', include(tags_router.urls)),
     path('', include(recipes_router.urls)),
@@ -42,10 +38,5 @@ urlpatterns = [
         'auth/set_password/',
         djoser_views.UserViewSet.as_view({'post': 'set_password'}),
         name='set_password'
-    ),
-    path(
-        'auth/user/',
-        CurrentUserViewSet.as_view({'get': 'retrieve'}),
-        name='current-user'
     ),
 ]

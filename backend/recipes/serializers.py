@@ -4,7 +4,6 @@ from recipes.models import (
 )
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
-from users.serializers import CustomUserSerializer
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -44,7 +43,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         required=False
     )
-    author = CustomUserSerializer(read_only=True)
+    author = serializers.SerializerMethodField()
     image = serializers.ImageField(required=False, allow_null=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -64,6 +63,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             'is_favorited',
             'is_in_shopping_cart'
         )
+
+    def get_author(self, obj):
+        from users.serializers import CustomUserSerializer
+        return CustomUserSerializer(obj.author, context=self.context).data
 
     def get_ingredients(self, obj):
         ingredients = RecipeIngredient.objects.filter(recipe=obj)
@@ -165,6 +168,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user.is_authenticated:
             return ShoppingCart.objects.filter(user=user, recipe=obj).exists()
         return False
+
+
+class RecipeShortSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

@@ -1,10 +1,11 @@
 from rest_framework import serializers
-from users.models import User
-from users.models import Follow
+from users.models import User, Follow
+from recipes.models import Recipe
 from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer,
     SetPasswordSerializer
 )
+from recipes.serializers import RecipeShortSerializer
 import base64
 import uuid
 from django.core.files.base import ContentFile
@@ -69,3 +70,37 @@ class CustomSetPasswordSerializer(SetPasswordSerializer):
     def validate(self, attrs):
         print("VALIDATING:", attrs)
         return super().validate(attrs)
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+    avatar = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'email', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'avatar', 'recipes', 'recipes_count'
+        )
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        user = request.user if request else None
+        if not user or user.is_anonymous:
+            return False
+        return Follow.objects.filter(user=user, author=obj).exists()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.query_params.get('recipes_limit') if request else None
+        queryset = Recipe.objects.filter(author=obj)
+        if limit and limit.isdigit():
+            queryset = queryset[:int(limit)]
+        return RecipeShortSerializer(
+            queryset, many=True, context={'request': request}
+        ).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
