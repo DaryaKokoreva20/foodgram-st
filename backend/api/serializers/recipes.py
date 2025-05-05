@@ -8,23 +8,30 @@ from api.fields import Base64ImageField
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели ингредиента."""
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели тега."""
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
 
 
 class IngredientInRecipeWriteSerializer(serializers.Serializer):
+    """Сериализатор для записи ингредиента в рецепте (id и количество)."""
     id = serializers.IntegerField()
     amount = serializers.IntegerField(validators=[MinValueValidator(1)])
 
 
 class IngredientInRecipeReadSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для чтения ингредиента в рецепте с данными из связанной
+    модели.
+    """
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
@@ -38,6 +45,10 @@ class IngredientInRecipeReadSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для создания и обновления рецептов с валидацией ингредиентов
+    и тегов.
+    """
     ingredients = serializers.SerializerMethodField()
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -78,9 +89,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'image': 'Картинка обязательна.'}
             )
-            return data
 
         ingredients_data = self.initial_data.get('ingredients')
+        if not isinstance(ingredients_data, list):
+            raise ValidationError({'ingredients': 'Неверный формат данных.'})
+
         if not ingredients_data:
             raise ValidationError(
                 {'ingredients': 'Нужно добавить хотя бы один ингредиент.'}
@@ -116,20 +129,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients_data = self.initial_data.get('ingredients')
         tags = validated_data.pop('tags', [])
         validated_data.pop('author', None)
-
         user = self.context['request'].user
-
         recipe = Recipe.objects.create(author=user, **validated_data)
-
         recipe.tags.set(tags)
-        for ingredient in ingredients_data:
-            ingredient_id = ingredient['id']
-            amount = ingredient['amount']
-            recipe.ingredients.add(
-                ingredient_id,
-                through_defaults={'amount': amount}
-            )
-
+        self.create_ingredients(recipe, ingredients_data)
         return recipe
 
     def create_ingredients(self, recipe, ingredients_data):
@@ -178,6 +181,9 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeResponseSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения рецептов (чтение), включает вложенные данные.
+    """
     ingredients = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
@@ -217,6 +223,9 @@ class RecipeResponseSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
+    """
+    Краткий сериализатор рецепта — для отображения в избранном или корзине.
+    """
     image = Base64ImageField()
 
     class Meta:
@@ -225,6 +234,10 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели избранного рецепта.
+    Используется при добавлении/удалении.
+    """
     class Meta:
         model = Favorite
         fields = ('id', 'user', 'recipe')
@@ -237,6 +250,10 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели корзины покупок.
+    Используется при добавлении/удалении.
+    """
     class Meta:
         model = ShoppingCart
         fields = ('id', 'user', 'recipe')

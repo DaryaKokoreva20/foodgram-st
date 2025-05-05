@@ -10,7 +10,8 @@ from api.fields import Base64ImageField
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
+    """Сериализатор пользователя с данными о подписке и рецептах."""
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = Base64ImageField(required=False, allow_null=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -48,6 +49,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class CustomUserCreateSerializer(DjoserUserCreateSerializer):
+    """Сериализатор для регистрации нового пользователя."""
     class Meta(DjoserUserCreateSerializer.Meta):
         model = User
         fields = (
@@ -61,7 +63,8 @@ class CustomUserCreateSerializer(DjoserUserCreateSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
+    """Сериализатор для краткого отображения пользователя."""
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
@@ -81,6 +84,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
 
 class UserAvatarSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления аватара пользователя."""
     avatar = Base64ImageField()
 
     class Meta:
@@ -89,6 +93,7 @@ class UserAvatarSerializer(serializers.ModelSerializer):
 
 
 class CustomSetPasswordSerializer(SetPasswordSerializer):
+    """Сериализатор для смены пароля пользователем."""
     current_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)
 
@@ -100,15 +105,15 @@ class CustomSetPasswordSerializer(SetPasswordSerializer):
         return user
 
     def validate(self, attrs):
-        print("VALIDATING:", attrs)
         return super().validate(attrs)
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
+    """Сериализатор подписки: включает рецепты, счётчик и статус подписки."""
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    avatar = serializers.ImageField(required=False, allow_null=True)
+    avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = User

@@ -20,9 +20,9 @@ from rest_framework.permissions import AllowAny
 
 
 class CustomUserViewSet(UserViewSet):
+    """Расширенное представление пользователей."""
     queryset = User.objects.all()
     lookup_field = 'pk'
-    serializer_class = CustomUserSerializer
 
     permission_classes_by_action = {
         'retrieve': [AllowAny],
@@ -56,6 +56,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(["post"], detail=False, permission_classes=[IsAuthenticated])
     def set_password(self, request, *args, **kwargs):
+        """Позволяет авторизованному пользователю сменить пароль."""
         serializer = CustomSetPasswordSerializer(
             data=request.data, context={'request': request}
         )
@@ -65,6 +66,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
+        """Возвращает список авторов, на которых подписан пользователь."""
         follows = Follow.objects.filter(
             user=request.user
         ).select_related('author')
@@ -89,6 +91,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=[IsAuthenticated],
     )
     def update_avatar(self, request):
+        """Позволяет загрузить или удалить аватар пользователя."""
         user = self.request.user
         if request.method == 'DELETE':
             user.avatar.delete(save=True)
@@ -99,7 +102,7 @@ class CustomUserViewSet(UserViewSet):
                 {'errors': 'Поле avatar не может быть пустым.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        user = self.request.user
+
         serializer = UserAvatarSerializer(
             user, data=request.data, partial=True, context={'request': request}
         )
@@ -122,6 +125,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=[IsAuthenticated],
     )
     def subscribe(self, request, pk=None):
+        """Подписка или отписка от другого пользователя."""
         author = get_object_or_404(User, pk=pk)
         user = request.user
 

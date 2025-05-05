@@ -20,7 +20,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
     """Разрешение на изменение/удаление только для автора."""
-
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
@@ -28,6 +27,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
 
 
 class IngredientFilter(FilterSet):
+    """Фильтр ингредиентов по началу названия (регистронезависимо)."""
     name = CharFilter(field_name='name', lookup_expr='istartswith')
 
     class Meta:
@@ -36,6 +36,7 @@ class IngredientFilter(FilterSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Представление для просмотра списка и отдельных ингредиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend]
@@ -45,12 +46,17 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Представление для просмотра списка и отдельных тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    CRUD-рецептов с дополнительными действиями (избранное, корзина,
+    скачивание).
+    """
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
 
@@ -106,6 +112,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe_url = f"{base_url}/recipes/{pk}/"
         return Response({'short-link': recipe_url})
 
+    def _short_response(self, recipe, status_code=status.HTTP_201_CREATED):
+        serializer = RecipeShortSerializer(
+            recipe, context=self.get_serializer_context()
+        )
+        return Response(serializer.data, status=status_code)
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -139,12 +151,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            recipe_serializer = RecipeShortSerializer(
-                recipe, context={'request': request}
-            )
-            return Response(
-                recipe_serializer.data, status=status.HTTP_201_CREATED
-            )
+            return self._short_response(recipe)
 
         if request.method == 'DELETE':
             deleted, _ = ShoppingCart.objects.filter(
@@ -218,12 +225,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            recipe_serializer = RecipeShortSerializer(
-                recipe, context={'request': request}
-            )
-            return Response(
-                recipe_serializer.data, status=status.HTTP_201_CREATED
-            )
+            return self._short_response(recipe)
 
         if request.method == 'DELETE':
             deleted, _ = Favorite.objects.filter(
@@ -257,6 +259,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):
+    """Вьюсет для управления объектами корзины покупок."""
     queryset = ShoppingCart.objects.all()
     serializer_class = ShoppingCartSerializer
     permission_classes = [IsAuthenticated]

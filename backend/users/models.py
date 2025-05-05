@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 
 class User(AbstractUser):
+    """Кастомная модель пользователя с уникальным идентификатором email."""
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
@@ -22,6 +23,7 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
+    """Модель подписки пользователя на авторов рецептов."""
     user = models.ForeignKey(
         User, related_name='follower', on_delete=models.CASCADE
     )
@@ -39,6 +41,7 @@ class Follow(models.Model):
         verbose_name_plural = 'Подписки'
 
     def clean(self):
+        """Запрещает пользователю подписываться на самого себя."""
         if self.user == self.author:
             raise ValidationError('Нельзя подписаться на самого себя.')
 
