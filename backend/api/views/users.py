@@ -10,11 +10,12 @@ from api.serializers.users import (
     CustomUserCreateSerializer,
     CustomSetPasswordSerializer,
     SubscriptionSerializer,
+    UserListSerializer,
+    UserAvatarSerializer
 )
 
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 
 
@@ -49,8 +50,8 @@ class CustomUserViewSet(UserViewSet):
             return CustomUserCreateSerializer
         if self.action == 'set_password':
             return CustomSetPasswordSerializer
-        if self.action == 'retrieve':
-            return SubscriptionSerializer
+        if self.action in ('retrieve', 'list', 'me'):
+            return UserListSerializer
         return CustomUserSerializer
 
     @action(["post"], detail=False, permission_classes=[IsAuthenticated])
@@ -64,15 +65,22 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
-        follows = Follow.objects.filter(user=request.user)
+        follows = Follow.objects.filter(
+            user=request.user
+        ).select_related('author')
         authors = [follow.author for follow in follows]
-        paginator = PageNumberPagination()
-        paginator.page_size = 6  # или используй settings.PAGE_SIZE
-        result_page = paginator.paginate_queryset(authors, request)
+
+        page = self.paginate_queryset(authors)
+        if page is not None:
+            serializer = SubscriptionSerializer(
+                page, many=True, context={'request': request}
+            )
+            return self.get_paginated_response(serializer.data)
+
         serializer = SubscriptionSerializer(
-            result_page, many=True, context={'request': request}
+            authors, many=True, context={'request': request}
         )
-        return paginator.get_paginated_response(serializer.data)
+        return Response(serializer.data)
 
     @action(
         detail=False,
@@ -92,17 +100,12 @@ class CustomUserViewSet(UserViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         user = self.request.user
-        serializer = CustomUserSerializer(
+        serializer = UserAvatarSerializer(
             user, data=request.data, partial=True, context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def retrieve(self, request, pk=None):
-        user = get_object_or_404(User, pk=pk)
-        serializer = SubscriptionSerializer(user, context={'request': request})
-        return Response(serializer.data)
 
     @action(
         detail=False,

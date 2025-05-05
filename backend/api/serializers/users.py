@@ -60,6 +60,34 @@ class CustomUserCreateSerializer(DjoserUserCreateSerializer):
         }
 
 
+class UserListSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    avatar = Base64ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'email', 'username',
+            'first_name', 'last_name',
+            'is_subscribed', 'avatar'
+        )
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        user = request.user if request else None
+        if not user or user.is_anonymous:
+            return False
+        return Follow.objects.filter(user=user, author=obj).exists()
+
+
+class UserAvatarSerializer(serializers.ModelSerializer):
+    avatar = Base64ImageField()
+
+    class Meta:
+        model = User
+        fields = ('avatar',)
+
+
 class CustomSetPasswordSerializer(SetPasswordSerializer):
     current_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)

@@ -4,7 +4,8 @@ from recipes.models import (
 )
 from api.serializers.recipes import (
     IngredientSerializer, TagSerializer, RecipeSerializer,
-    ShoppingCartSerializer, FavoriteSerializer
+    ShoppingCartSerializer, FavoriteSerializer, RecipeResponseSerializer,
+    RecipeShortSerializer
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import permissions
@@ -52,19 +53,58 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = [IsAuthorOrReadOnly]
+
+    def get_permissions(self):
+        if self.action in ['create']:
+            return [IsAuthenticated()]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAuthorOrReadOnly()]
+        return [AllowAny()]
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        recipe = serializer.save(author=self.request.user)
+        response_serializer = RecipeResponseSerializer(
+            recipe, context=self.get_serializer_context()
+        )
+        self._recipe_response = response_serializer.data
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            self._recipe_response,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        response_serializer = RecipeResponseSerializer(
+            instance, context=self.get_serializer_context()
+        )
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     def get_serializer_context(self):
         return {'request': self.request}
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return RecipeResponseSerializer
+        return RecipeSerializer
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_short_link(self, request, pk=None):
         base_url = request.build_absolute_uri('/')[:-1]
         recipe_url = f"{base_url}/recipes/{pk}/"
-        return Response({'short_link': recipe_url})
+        return Response({'short-link': recipe_url})
 
     @action(
         detail=True,
@@ -74,9 +114,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def manage_cart(self, request, pk=None):
         user = request.user
+
+        if not request.user.is_authenticated:
+            return Response(
+                {'detail': 'Учетные данные не были предоставлены.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
         recipe = self.get_object()
 
         if request.method == 'POST':
+
             if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
                     {'detail': 'Рецепт уже в корзине.'},
@@ -91,7 +139,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            recipe_serializer = RecipeSerializer(
+            recipe_serializer = RecipeShortSerializer(
                 recipe, context={'request': request}
             )
             return Response(
@@ -149,6 +197,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk=None):
         user = request.user
+
+        if not user.is_authenticated:
+            return Response(
+                {'detail': 'Учетные данные не были предоставлены.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
         recipe = self.get_object()
 
         if request.method == 'POST':
@@ -163,9 +218,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
+            recipe_serializer = RecipeShortSerializer(
+                recipe, context={'request': request}
+            )
             return Response(
-                {'detail': 'Рецепт добавлен в избранное.'},
-                status=status.HTTP_201_CREATED
+                recipe_serializer.data, status=status.HTTP_201_CREATED
             )
 
         if request.method == 'DELETE':

@@ -4,6 +4,7 @@ from recipes.models import (
 )
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from api.fields import Base64ImageField
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -46,6 +47,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
@@ -64,8 +66,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_author(self, obj):
-        from api.serializers.users import CustomUserSerializer
-        return CustomUserSerializer(obj.author, context=self.context).data
+        from api.serializers.users import UserListSerializer
+        return UserListSerializer(obj.author, context=self.context).data
 
     def get_ingredients(self, obj):
         ingredients = RecipeIngredient.objects.filter(recipe=obj)
@@ -76,7 +78,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'image': 'Картинка обязательна.'}
             )
-        return data
+            return data
 
         ingredients_data = self.initial_data.get('ingredients')
         if not ingredients_data:
@@ -175,8 +177,47 @@ class RecipeSerializer(serializers.ModelSerializer):
         return False
 
 
+class RecipeResponseSerializer(serializers.ModelSerializer):
+    ingredients = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id', 'author', 'name', 'image', 'text', 'cooking_time',
+            'ingredients', 'is_favorited', 'is_in_shopping_cart'
+        )
+
+    def get_author(self, obj):
+        from api.serializers.users import UserListSerializer
+        return UserListSerializer(obj.author, context=self.context).data
+
+    def get_ingredients(self, obj):
+        ingredients = RecipeIngredient.objects.filter(recipe=obj)
+        return IngredientInRecipeReadSerializer(ingredients, many=True).data
+
+    def get_is_favorited(self, obj):
+        user = self.context['request'].user
+        return (
+            user.is_authenticated and Favorite.objects.filter(
+                user=user, recipe=obj
+            ).exists()
+        )
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context['request'].user
+        return (
+            user.is_authenticated and ShoppingCart.objects.filter(
+                user=user, recipe=obj
+            ).exists()
+        )
+
+
 class RecipeShortSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField()
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
