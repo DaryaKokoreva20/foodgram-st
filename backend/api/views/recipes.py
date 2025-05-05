@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from recipes.models import (
     Ingredient, Tag, Recipe, Favorite, ShoppingCart, RecipeIngredient
 )
-from recipes.serializers import (
+from api.serializers.recipes import (
     IngredientSerializer, TagSerializer, RecipeSerializer,
     ShoppingCartSerializer, FavoriteSerializer
 )

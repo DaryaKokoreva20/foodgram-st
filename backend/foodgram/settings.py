@@ -69,7 +69,7 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB', 'foodgram'),
         'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'foodgram_pass'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'HOST': os.getenv('DB_HOST', 'db'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
@@ -108,7 +108,10 @@ STATIC_URL = '/backend_static/'
 STATIC_ROOT = '/app/static'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/app/media/'
+if DEBUG:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    MEDIA_ROOT = '/app/media/'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -117,10 +120,10 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'USER_CREATE_PASSWORD_RETYPE': True,
     'SERIALIZERS': {
-        'user': 'users.serializers.CustomUserSerializer',
-        'user_create': 'users.serializers.CustomUserCreateSerializer',
-        'current_user': 'users.serializers.CustomUserSerializer',
-        'set_password': 'users.serializers.CustomSetPasswordSerializer',
+        'user': 'api.serializers.users.CustomUserSerializer',
+        'user_create': 'api.serializers.users.CustomUserCreateSerializer',
+        'current_user': 'api.serializers.users.CustomUserSerializer',
+        'set_password': 'api.serializers.users.CustomSetPasswordSerializer',
     },
     'SET_PASSWORD_RETYPE': False,
 }

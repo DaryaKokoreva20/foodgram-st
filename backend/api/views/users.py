@@ -5,13 +5,14 @@ from rest_framework.response import Response
 
 from users.models import Follow
 from users.models import User
-from users.serializers import (
-    CustomUserSerializer, CustomSetPasswordSerializer,
-    SubscriptionSerializer
+from api.serializers.users import (
+    CustomUserSerializer,
+    CustomUserCreateSerializer,
+    CustomSetPasswordSerializer,
+    SubscriptionSerializer,
 )
 
 from rest_framework import status
-from users.serializers import CustomUserCreateSerializer
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
@@ -25,6 +26,7 @@ class CustomUserViewSet(UserViewSet):
     permission_classes_by_action = {
         'retrieve': [AllowAny],
         'me': [IsAuthenticated],
+        'list': [AllowAny],
         'subscriptions': [IsAuthenticated],
         'subscribe': [IsAuthenticated],
         'set_password': [IsAuthenticated],
@@ -74,11 +76,21 @@ class CustomUserViewSet(UserViewSet):
 
     @action(
         detail=False,
-        methods=['put'],
+        methods=['put', 'delete'],
         url_path='me/avatar',
         permission_classes=[IsAuthenticated],
     )
     def update_avatar(self, request):
+        user = self.request.user
+        if request.method == 'DELETE':
+            user.avatar.delete(save=True)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        if 'avatar' not in request.data or not request.data['avatar']:
+            return Response(
+                {'errors': 'Поле avatar не может быть пустым.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         user = self.request.user
         serializer = CustomUserSerializer(
             user, data=request.data, partial=True, context={'request': request}

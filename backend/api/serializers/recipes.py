@@ -4,7 +4,6 @@ from recipes.models import (
 )
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
-from utils.fields import Base64ImageField
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -45,7 +44,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         required=False
     )
     author = serializers.SerializerMethodField()
-    image = Base64ImageField(required=False, allow_null=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -66,7 +64,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_author(self, obj):
-        from users.serializers import CustomUserSerializer
+        from api.serializers.users import CustomUserSerializer
         return CustomUserSerializer(obj.author, context=self.context).data
 
     def get_ingredients(self, obj):
@@ -74,6 +72,12 @@ class RecipeSerializer(serializers.ModelSerializer):
         return IngredientInRecipeReadSerializer(ingredients, many=True).data
 
     def validate(self, data):
+        if not data.get('image'):
+            raise serializers.ValidationError(
+                {'image': 'Картинка обязательна.'}
+            )
+        return data
+
         ingredients_data = self.initial_data.get('ingredients')
         if not ingredients_data:
             raise ValidationError(
