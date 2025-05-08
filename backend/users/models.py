@@ -2,6 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from constants import (
+    FIRST_NAME_MAX_LENGTH,
+    LAST_NAME_MAX_LENGTH
+)
+
 
 class User(AbstractUser):
     """Кастомная модель пользователя с уникальным идентификатором email."""
@@ -11,11 +16,11 @@ class User(AbstractUser):
         verbose_name='Электронная почта'
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=FIRST_NAME_MAX_LENGTH,
         verbose_name='Имя'
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=LAST_NAME_MAX_LENGTH,
         verbose_name='Фамилия'
     )
     avatar = models.ImageField(

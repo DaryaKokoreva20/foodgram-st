@@ -5,20 +5,25 @@ from django.core.validators import (
 )
 from django.db import models
 
-MIN_INGREDIENT_AMOUNT = 1
-MAX_INGREDIENT_AMOUNT = 10000
-MIN_COOKING_TIME = 1
+from constants import (
+    MIN_INGREDIENT_AMOUNT,
+    MAX_INGREDIENT_AMOUNT,
+    MIN_COOKING_TIME,
+    INGREDIENT_NAME_MAX_LENGTH,
+    MEASUREMENT_UNIT_MAX_LENGTH,
+    RECIPE_NAME_MAX_LENGTH,
+)
 
 
 class Ingredient(models.Model):
     """Модель ингредиента с названием и единицей измерения."""
 
     name = models.CharField(
-        max_length=200,
+        max_length=INGREDIENT_NAME_MAX_LENGTH,
         verbose_name='Название'
     )
     measurement_unit = models.CharField(
-        max_length=50,
+        max_length=MEASUREMENT_UNIT_MAX_LENGTH,
         verbose_name='Единица измерения'
     )
 
@@ -47,7 +52,7 @@ class Recipe(models.Model):
         verbose_name='Автор'
     )
     name = models.CharField(
-        max_length=200,
+        max_length=RECIPE_NAME_MAX_LENGTH,
         verbose_name='Название рецепта'
     )
     image = models.ImageField(
