@@ -208,6 +208,29 @@ class FavoriteSerializer(serializers.ModelSerializer):
         return Favorite.objects.create(user=request.user, recipe=recipe)
 
 
+class FavoriteCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ('recipe',)
+
+    def validate(self, data):
+        user = self.context['request'].user
+        recipe = data['recipe']
+        if Favorite.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError('Рецепт уже в избранном.')
+        return data
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        recipe = validated_data['recipe']
+        return Favorite.objects.create(user=user, recipe=recipe)
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe, context=self.context
+        ).data
+
+
 class ShoppingCartSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели корзины покупок.
@@ -223,3 +246,26 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         request = self.context['request']
         recipe = self.context['view'].get_object()
         return ShoppingCart.objects.create(user=request.user, recipe=recipe)
+
+
+class ShoppingCartCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShoppingCart
+        fields = ('recipe',)
+
+    def validate(self, data):
+        user = self.context['request'].user
+        recipe = data['recipe']
+        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError('Рецепт уже в корзине.')
+        return data
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        recipe = validated_data['recipe']
+        return ShoppingCart.objects.create(user=user, recipe=recipe)
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe, context=self.context
+        ).data

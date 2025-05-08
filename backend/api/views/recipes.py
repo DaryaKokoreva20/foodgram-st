@@ -15,12 +15,12 @@ from rest_framework.response import Response
 from api.filters import IngredientFilter
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers.recipes import (
-    FavoriteSerializer,
+    FavoriteCreateSerializer,
     IngredientSerializer,
     RecipeResponseSerializer,
     RecipeSerializer,
     RecipeShortSerializer,
-    ShoppingCartSerializer,
+    ShoppingCartCreateSerializer,
 )
 from recipes.models import (
     Favorite,
@@ -76,38 +76,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def manage_cart(self, request, pk=None):
+        """Добавление или удаление рецепта из корзины покупок."""
+        recipe = self.get_object()
         user = request.user
 
-        recipe = self.get_object()
-
         if request.method == 'POST':
-
-            if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
-                return Response(
-                    {'detail': 'Рецепт уже в корзине.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            serializer = ShoppingCartSerializer(
+            serializer = ShoppingCartCreateSerializer(
                 data={'recipe': recipe.id},
-                context={'request': request, 'view': self}
+                context={'request': request}
             )
-
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            return self._short_response(recipe)
-
-        if request.method == 'DELETE':
-            deleted, _ = ShoppingCart.objects.filter(
-                user=user, recipe=recipe
-            ).delete()
-            if deleted:
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'detail': 'Рецепта не было в корзине.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        deleted, _ = ShoppingCart.objects.filter(
+            user=user, recipe=recipe
+        ).delete()
+        if deleted:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'detail': 'Рецепта не было в корзине.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         detail=False,
@@ -148,43 +138,29 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def favorite(self, request, pk=None):
+        """Добавление или удаление рецепта из избранного."""
+        recipe = self.get_object()
         user = request.user
 
-        if not user.is_authenticated:
-            return Response(
-                {'detail': 'Учетные данные не были предоставлены.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        recipe = self.get_object()
-
         if request.method == 'POST':
-            if Favorite.objects.filter(user=user, recipe=recipe).exists():
-                return Response(
-                    {'detail': 'Рецепт уже в избранном.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            serializer = FavoriteSerializer(
-                data={}, context={'request': request, 'view': self}
+            serializer = FavoriteCreateSerializer(
+                data={'recipe': recipe.id},
+                context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            return self._short_response(recipe)
-
-        if request.method == 'DELETE':
-            deleted, _ = Favorite.objects.filter(
-                user=user, recipe=recipe
-            ).delete()
-            if deleted:
-                return Response(
-                    {'detail': 'Рецепт удалён из избранного.'},
-                    status=status.HTTP_204_NO_CONTENT
-                )
+        deleted, _ = Favorite.objects.filter(user=user, recipe=recipe).delete()
+        if deleted:
             return Response(
-                {'detail': 'Рецепта не было в избранном.'},
-                status=status.HTTP_400_BAD_REQUEST
+                {'detail': 'Рецепт удалён из избранного.'},
+                status=status.HTTP_204_NO_CONTENT
             )
+        return Response(
+            {'detail': 'Рецепта не было в избранном.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     def get_queryset(self):
         queryset = Recipe.objects.all()
