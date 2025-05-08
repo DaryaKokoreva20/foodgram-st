@@ -17,7 +17,6 @@ from api.serializers.recipes import (
     RecipeSerializer,
     RecipeShortSerializer,
     ShoppingCartSerializer,
-    TagSerializer,
 )
 from recipes.models import (
     Favorite,
@@ -25,7 +24,6 @@ from recipes.models import (
     Recipe,
     RecipeIngredient,
     ShoppingCart,
-    Tag,
 )
 
 
@@ -57,14 +55,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = IngredientFilter
     permission_classes = [AllowAny]
     pagination_class = None
-
-
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """Представление для просмотра списка и отдельных тегов."""
-
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    permission_classes = [AllowAny]
 
 
 class RecipeViewSet(viewsets.ModelViewSet):

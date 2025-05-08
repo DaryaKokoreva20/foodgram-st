@@ -6,7 +6,6 @@ from recipes.models import (
     Recipe,
     RecipeIngredient,
     ShoppingCart,
-    Tag,
 )
 
 
@@ -14,7 +13,6 @@ from recipes.models import (
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author', 'favorites_count')
     search_fields = ('name', 'author__username')
-    list_filter = ('tags',)
     empty_value_display = '-пусто-'
 
 
@@ -22,12 +20,6 @@ class RecipeAdmin(admin.ModelAdmin):
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit')
     search_fields = ('name',)
-
-
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color', 'slug')
-    search_fields = ('name', 'slug')
 
 
 @admin.register(RecipeIngredient)
