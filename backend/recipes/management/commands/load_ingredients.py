@@ -3,6 +3,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from tqdm import tqdm
 
 from recipes.models import Ingredient
 
@@ -17,7 +18,7 @@ class Command(BaseCommand):
             data = json.load(f)
 
         created = 0
-        for item in data:
+        for item in tqdm(data, desc='Загрузка ингредиентов'):
             obj, is_created = Ingredient.objects.get_or_create(
                 name=item['name'],
                 measurement_unit=item['measurement_unit']
