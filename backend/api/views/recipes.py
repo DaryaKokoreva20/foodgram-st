@@ -5,11 +5,12 @@ from django_filters.rest_framework import (
     DjangoFilterBackend,
     FilterSet,
 )
-from rest_framework import permissions, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from api.permissions import IsAuthorOrReadOnly
 from api.serializers.recipes import (
     FavoriteSerializer,
     IngredientSerializer,
@@ -25,15 +26,6 @@ from recipes.models import (
     RecipeIngredient,
     ShoppingCart,
 )
-
-
-class IsAuthorOrReadOnly(permissions.BasePermission):
-    """Разрешение на изменение/удаление только для автора."""
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return obj.author == request.user
 
 
 class IngredientFilter(FilterSet):
