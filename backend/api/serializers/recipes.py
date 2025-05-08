@@ -127,7 +127,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
 
         if ingredients_data is not None:
-            instance.recipe_ingredients.all().delete()
+            instance.ingredient_links.all().delete()
             self.create_ingredients(instance, ingredients_data)
 
         return instance

@@ -135,7 +135,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @staticmethod
     def _get_aggregated_ingredients(user):
         return RecipeIngredient.objects.filter(
-            recipe__in_shopping_cart__user=user
+            recipe__shopping_carts__user=user
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
@@ -144,8 +144,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @staticmethod
     def _format_ingredients_for_download(ingredients):
         return '\n'.join([
-            f'{item["ingredient__name"]}'
-            ' ({item["ingredient__measurement_unit"]}) — {item["amount"]}'
+            f'{item["ingredient__name"]} '
+            f'({item["ingredient__measurement_unit"]}) — {item["amount"]}'
             for item in ingredients
         ])
 

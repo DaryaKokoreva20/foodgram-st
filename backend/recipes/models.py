@@ -4,6 +4,7 @@ from django.core.validators import (
     MinValueValidator
 )
 from django.db import models
+from django.contrib.auth import get_user_model
 
 from constants import (
     MIN_INGREDIENT_AMOUNT,
@@ -13,6 +14,8 @@ from constants import (
     MEASUREMENT_UNIT_MAX_LENGTH,
     RECIPE_NAME_MAX_LENGTH,
 )
+
+User = get_user_model()
 
 
 class Ingredient(models.Model):
@@ -46,7 +49,7 @@ class Recipe(models.Model):
     """Модель рецепта, связанная с автором, ингредиентами и тегами."""
 
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Автор'
@@ -75,10 +78,6 @@ class Recipe(models.Model):
 
     pub_date = models.DateTimeField(auto_now_add=True)
 
-    @property
-    def favorites_count(self):
-        return self.favorited_by.count()
-
     class Meta:
         ordering = ['-pub_date']
         verbose_name = 'Рецепт'
@@ -87,6 +86,10 @@ class Recipe(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def favorites_count(self):
+        return self.favorited_by.count()
+
 
 class RecipeIngredient(models.Model):
     """Промежуточная модель для связи рецепта и ингредиента с количеством."""
@@ -94,13 +97,13 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients',
+        related_name='ingredient_links',
         verbose_name='Рецепт'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='ingredient_recipes',
+        related_name='recipe_links',
         verbose_name='Ингредиент'
     )
     amount = models.PositiveIntegerField(
@@ -129,7 +132,7 @@ class Favorite(models.Model):
     """Модель избранных рецептов пользователя."""
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name='favorites',
         verbose_name='Пользователь'
@@ -137,7 +140,7 @@ class Favorite(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favorited_by',
+        related_name='favorite_entries',
         verbose_name='Рецепт'
     )
 
@@ -166,7 +169,7 @@ class ShoppingCart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='in_shopping_cart',
+        related_name='shopping_carts',
         verbose_name='Рецепт'
     )
 
