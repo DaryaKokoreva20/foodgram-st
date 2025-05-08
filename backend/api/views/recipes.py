@@ -1,15 +1,14 @@
 from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import (
-    CharFilter,
     DjangoFilterBackend,
-    FilterSet,
 )
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from api.filters import IngredientFilter
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers.recipes import (
     FavoriteSerializer,
@@ -26,16 +25,6 @@ from recipes.models import (
     RecipeIngredient,
     ShoppingCart,
 )
-
-
-class IngredientFilter(FilterSet):
-    """Фильтр ингредиентов по началу названия (регистронезависимо)."""
-
-    name = CharFilter(field_name='name', lookup_expr='istartswith')
-
-    class Meta:
-        model = Ingredient
-        fields = ['name']
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
