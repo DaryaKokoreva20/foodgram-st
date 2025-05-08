@@ -7,10 +7,12 @@ from recipes.models import (
     RecipeIngredient,
     ShoppingCart,
 )
+from recipes.admin_forms import RecipeAdminForm
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    form = RecipeAdminForm
     list_display = ('name', 'author', 'favorites_count')
     search_fields = ('name', 'author__username')
     empty_value_display = '-пусто-'

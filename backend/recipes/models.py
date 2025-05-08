@@ -117,7 +117,7 @@ class RecipeIngredient(models.Model):
                 fields=['recipe', 'ingredient'],
                 name='unique_recipe_ingredient'
             )
-        ],
+        ]
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
 
@@ -146,7 +146,7 @@ class Favorite(models.Model):
             models.UniqueConstraint(
                 fields=['user', 'recipe'], name='unique_favorite'
             )
-        ],
+        ]
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
 
