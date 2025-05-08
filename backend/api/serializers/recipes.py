@@ -1,5 +1,8 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator
+)
 from rest_framework import serializers
 
 from api.fields import Base64ImageField
@@ -10,6 +13,9 @@ from recipes.models import (
     RecipeIngredient,
     ShoppingCart,
 )
+
+MIN_INGREDIENT_AMOUNT = 1
+MAX_INGREDIENT_AMOUNT = 10000
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -24,7 +30,12 @@ class IngredientInRecipeWriteSerializer(serializers.Serializer):
     """Сериализатор для записи ингредиента в рецепте (id и количество)."""
 
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField(validators=[MinValueValidator(1)])
+    amount = serializers.IntegerField(
+        validators=[
+            MinValueValidator(MIN_INGREDIENT_AMOUNT),
+            MaxValueValidator(MAX_INGREDIENT_AMOUNT),
+        ]
+    )
 
 
 class IngredientInRecipeReadSerializer(serializers.ModelSerializer):
