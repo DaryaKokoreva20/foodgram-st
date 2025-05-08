@@ -94,16 +94,13 @@ class CustomSetPasswordSerializer(SetPasswordSerializer):
 
 class SubscriptionSerializer(CustomUserSerializer):
     """Сериализатор подписки: включает рецепты, счётчик и статус подписки."""
-    is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    avatar = Base64ImageField(required=False, allow_null=True)
 
-    class Meta:
-        model = User
-        fields = (
-            'id', 'email', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'avatar', 'recipes', 'recipes_count'
+    class Meta(CustomUserSerializer.Meta):
+        fields = CustomUserSerializer.Meta.fields + (
+            'recipes',
+            'recipes_count',
         )
 
     def get_is_subscribed(self, obj):
