@@ -68,6 +68,9 @@ class Follow(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 
+    def __str__(self):
+        return f'{self.user} follows {self.author}'
+
     def clean(self):
         """Запрещает пользователю подписываться на самого себя."""
         if self.user == self.author:
@@ -76,6 +79,3 @@ class Follow(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f'{self.user} follows {self.author}'
