@@ -23,7 +23,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 class IngredientInRecipeWriteSerializer(serializers.Serializer):
     """Сериализатор для записи ингредиента в рецепте (id и количество)."""
 
-    id = serializers.IntegerField()
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(validators=[MinValueValidator(1)])
 
 
