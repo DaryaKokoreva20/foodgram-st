@@ -14,15 +14,11 @@ class CustomUserSerializer(DjoserUserSerializer):
     """Сериализатор пользователя с данными о подписке и рецептах."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = Base64ImageField(required=False, allow_null=True)
-    recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
 
     class Meta(DjoserUserSerializer.Meta):
         fields = DjoserUserSerializer.Meta.fields + (
             'is_subscribed',
             'avatar',
-            'recipes',
-            'recipes_count',
         )
 
     def get_is_subscribed(self, obj):
