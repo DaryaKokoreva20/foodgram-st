@@ -68,19 +68,13 @@ class CustomUserViewSet(UserViewSet):
         follows = Follow.objects.filter(
             user=request.user
         ).select_related('author')
-        authors = [follow.author for follow in follows]
+        authors = User.objects.filter(following__in=follows).distinct()
 
         page = self.paginate_queryset(authors)
-        if page is not None:
-            serializer = SubscriptionSerializer(
-                page, many=True, context={'request': request}
-            )
-            return self.get_paginated_response(serializer.data)
-
         serializer = SubscriptionSerializer(
-            authors, many=True, context={'request': request}
+            page, many=True, context={'request': request}
         )
-        return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
     @action(
         detail=False,
@@ -144,12 +138,11 @@ class CustomUserViewSet(UserViewSet):
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            follow = Follow.objects.filter(user=user, author=author)
-            if follow.exists():
-                follow.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Вы не подписаны на этого автора'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        follow = Follow.objects.filter(user=user, author=author)
+        if follow.exists():
+            follow.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'errors': 'Вы не подписаны на этого автора'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
