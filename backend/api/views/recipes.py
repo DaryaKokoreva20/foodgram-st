@@ -52,22 +52,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
 
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        response_serializer = RecipeResponseSerializer(
-            instance, context=self.get_serializer_context()
-        )
-        return Response(response_serializer.data, status=status.HTTP_200_OK)
-
-    def get_serializer_context(self):
-        return {'request': self.request}
-
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return RecipeResponseSerializer
@@ -223,14 +207,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(author__id=params.get('author'))
 
         return queryset
-
-
-class ShoppingCartViewSet(viewsets.ModelViewSet):
-    """Вьюсет для управления объектами корзины покупок."""
-
-    queryset = ShoppingCart.objects.all()
-    serializer_class = ShoppingCartSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
