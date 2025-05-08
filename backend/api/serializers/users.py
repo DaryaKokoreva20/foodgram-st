@@ -3,26 +3,26 @@ from users.models import User, Follow
 from recipes.models import Recipe
 from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer,
-    SetPasswordSerializer
+    SetPasswordSerializer,
+    UserSerializer as DjoserUserSerializer
 )
 from api.serializers.recipes import RecipeShortSerializer
 from api.fields import Base64ImageField
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(DjoserUserSerializer):
     """Сериализатор пользователя с данными о подписке и рецептах."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = Base64ImageField(required=False, allow_null=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
-    class Meta:
-        model = User
-        fields = (
-            'id', 'email', 'username',
-            'first_name', 'last_name',
-            'is_subscribed', 'avatar',
-            'recipes', 'recipes_count'
+    class Meta(DjoserUserSerializer.Meta):
+        fields = DjoserUserSerializer.Meta.fields + (
+            'is_subscribed',
+            'avatar',
+            'recipes',
+            'recipes_count',
         )
 
     def get_is_subscribed(self, obj):
