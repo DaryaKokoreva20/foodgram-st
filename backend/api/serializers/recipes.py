@@ -79,12 +79,12 @@ class RecipeSerializer(serializers.ModelSerializer):
             'pub_date'
         )
 
-    def validate(self, data):
-        if not data.get('image'):
-            raise serializers.ValidationError(
-                {'image': 'Картинка обязательна.'}
-            )
+    def validate_image(self, image):
+        if self.instance is None and not image:
+            raise serializers.ValidationError('Картинка обязательна.')
+        return image
 
+    def validate(self, data):
         ingredients_data = self.initial_data.get('ingredients')
         if not isinstance(ingredients_data, list):
             raise ValidationError({'ingredients': 'Неверный формат данных.'})
