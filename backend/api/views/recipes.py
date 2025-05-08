@@ -1,5 +1,6 @@
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import FileResponse
+from io import BytesIO
 from django_filters.rest_framework import (
     DjangoFilterBackend,
 )
@@ -123,11 +124,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients = self._get_aggregated_ingredients(request.user)
         content = self._format_ingredients_for_download(ingredients)
 
-        response = HttpResponse(content, content_type='text/plain')
-        response['Content-Disposition'] = (
-            'attachment; filename="shopping_list.txt"'
+        file = BytesIO(content.encode('utf-8'))
+        return FileResponse(
+            file,
+            as_attachment=True,
+            filename='shopping_list.txt',
+            content_type='text/plain'
         )
-        return response
 
     @staticmethod
     def _get_aggregated_ingredients(user):
