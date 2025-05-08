@@ -23,12 +23,10 @@ class CustomUserSerializer(DjoserUserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if request and not request.user.is_anonymous:
-            return Follow.objects.filter(
-                user=request.user,
-                author=obj
-            ).exists()
-        return False
+        user = request.user if request else None
+        if not user or not user.is_authenticated:
+            return False
+        return Follow.objects.filter(user=user, author=obj).exists()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -74,7 +72,7 @@ class UserListSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         user = request.user if request else None
-        if not user or user.is_anonymous:
+        if not user or not user.is_authenticated:
             return False
         return Follow.objects.filter(user=user, author=obj).exists()
 
@@ -121,7 +119,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         user = request.user if request else None
-        if not user or user.is_anonymous:
+        if not user or not user.is_authenticated:
             return False
         return Follow.objects.filter(user=user, author=obj).exists()
 
