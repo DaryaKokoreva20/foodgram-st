@@ -122,20 +122,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create(recipe_ingredients)
 
     def update(self, instance, validated_data):
-        ingredients_data = validated_data.pop('ingredients')
+        ingredients_data = validated_data.pop('ingredients', None)
 
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get(
-            'text', instance.text
-        )
-        instance.cooking_time = validated_data.get(
-            'cooking_time', instance.cooking_time
-        )
-        instance.image = validated_data.get('image', instance.image)
-        instance.save()
+        instance = super().update(instance, validated_data)
 
-        instance.recipe_ingredients.all().delete()
-        self.create_ingredients(instance, ingredients_data)
+        if ingredients_data is not None:
+            instance.recipe_ingredients.all().delete()
+            self.create_ingredients(instance, ingredients_data)
 
         return instance
 
