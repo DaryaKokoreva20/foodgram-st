@@ -8,7 +8,7 @@ from djoser.serializers import (
 from api.fields import Base64ImageField
 from api.serializers.recipes import RecipeShortSerializer
 from recipes.models import Recipe
-from users.models import User
+from users.models import User, Follow
 
 
 class CustomUserSerializer(DjoserUserSerializer):
@@ -122,3 +122,35 @@ class SubscriptionSerializer(CustomUserSerializer):
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
+
+
+class SubscriptionCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания подписки на пользователя."""
+
+    class Meta:
+        model = Follow
+        fields = ('author',)
+
+    def validate(self, data):
+        user = self.context['request'].user
+        author = data['author']
+        if user == author:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя.'
+            )
+        if Follow.objects.filter(user=user, author=author).exists():
+            raise serializers.ValidationError(
+                'Вы уже подписаны на этого пользователя.'
+            )
+        return data
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        author = validated_data['author']
+        return Follow.objects.create(user=user, author=author)
+
+    def to_representation(self, instance):
+        return SubscriptionSerializer(
+            instance.author,
+            context=self.context
+        ).data

@@ -9,6 +9,7 @@ from api.serializers.users import (
     CustomSetPasswordSerializer,
     CustomUserCreateSerializer,
     CustomUserSerializer,
+    SubscriptionCreateSerializer,
     SubscriptionSerializer,
     UserAvatarSerializer,
     UserListSerializer,
@@ -122,21 +123,18 @@ class CustomUserViewSet(UserViewSet):
         user = request.user
 
         if request.method == 'POST':
-            if user == author:
-                return Response(
-                    {'errors': 'Нельзя подписаться на самого себя'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            if Follow.objects.filter(user=user, author=author).exists():
-                return Response(
-                    {'errors': 'Вы уже подписаны на этого автора'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            Follow.objects.create(user=user, author=author)
-            serializer = SubscriptionSerializer(
-                author, context={'request': request}
+            serializer = SubscriptionCreateSerializer(
+                data={'author': author.id},
+                context={'request': request}
             )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.is_valid(raise_exception=True)
+            follow = serializer.save()
+            return Response(
+                SubscriptionSerializer(
+                    follow.author, context={'request': request}
+                ).data,
+                status=status.HTTP_201_CREATED
+            )
 
         follow = Follow.objects.filter(user=user, author=author)
         if follow.exists():
