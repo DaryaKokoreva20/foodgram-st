@@ -92,7 +92,7 @@ class CustomSetPasswordSerializer(SetPasswordSerializer):
         return super().validate(attrs)
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
+class SubscriptionSerializer(CustomUserSerializer):
     """Сериализатор подписки: включает рецепты, счётчик и статус подписки."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField()
