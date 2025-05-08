@@ -78,12 +78,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def manage_cart(self, request, pk=None):
         user = request.user
 
-        if not request.user.is_authenticated:
-            return Response(
-                {'detail': 'Учетные данные не были предоставлены.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
         recipe = self.get_object()
 
         if request.method == 'POST':
