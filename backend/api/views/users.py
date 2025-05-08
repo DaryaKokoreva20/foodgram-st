@@ -18,6 +18,7 @@ from users.models import Follow, User
 
 class CustomUserViewSet(UserViewSet):
     """Расширенное представление пользователей."""
+
     queryset = User.objects.all()
     lookup_field = 'pk'
 

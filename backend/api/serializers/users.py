@@ -13,6 +13,7 @@ from users.models import User
 
 class CustomUserSerializer(DjoserUserSerializer):
     """Сериализатор пользователя с данными о подписке и рецептах."""
+
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = Base64ImageField(required=False, allow_null=True)
 
@@ -35,6 +36,7 @@ class CustomUserSerializer(DjoserUserSerializer):
 
 class CustomUserCreateSerializer(DjoserUserCreateSerializer):
     """Сериализатор для регистрации нового пользователя."""
+
     class Meta(DjoserUserCreateSerializer.Meta):
         model = User
         fields = (
@@ -49,6 +51,7 @@ class CustomUserCreateSerializer(DjoserUserCreateSerializer):
 
 class UserListSerializer(serializers.ModelSerializer):
     """Сериализатор для краткого отображения пользователя."""
+
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = Base64ImageField(required=False, allow_null=True)
 
@@ -70,6 +73,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
 class UserAvatarSerializer(serializers.ModelSerializer):
     """Сериализатор для обновления аватара пользователя."""
+
     avatar = Base64ImageField()
 
     class Meta:
@@ -79,6 +83,7 @@ class UserAvatarSerializer(serializers.ModelSerializer):
 
 class CustomSetPasswordSerializer(SetPasswordSerializer):
     """Сериализатор для смены пароля пользователем."""
+
     current_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)
 
@@ -95,6 +100,7 @@ class CustomSetPasswordSerializer(SetPasswordSerializer):
 
 class SubscriptionSerializer(CustomUserSerializer):
     """Сериализатор подписки: включает рецепты, счётчик и статус подписки."""
+
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 

@@ -5,6 +5,7 @@ from django.db import models
 
 class User(AbstractUser):
     """Кастомная модель пользователя с уникальным идентификатором email."""
+
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
@@ -24,6 +25,7 @@ class User(AbstractUser):
 
 class Follow(models.Model):
     """Модель подписки пользователя на авторов рецептов."""
+
     user = models.ForeignKey(
         User, related_name='follower', on_delete=models.CASCADE
     )

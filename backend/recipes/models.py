@@ -5,6 +5,7 @@ from django.db import models
 
 class Ingredient(models.Model):
     """Модель ингредиента с названием и единицей измерения."""
+
     name = models.CharField(max_length=200)
     measurement_unit = models.CharField(max_length=50)
 
@@ -25,6 +26,7 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     """Модель тега для рецептов (например, завтрак, обед, ужин)."""
+
     name = models.CharField(max_length=100)
     color = models.CharField(max_length=7)
     slug = models.SlugField(max_length=100, unique=True)
@@ -40,6 +42,7 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     """Модель рецепта, связанная с автором, ингредиентами и тегами."""
+
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -71,6 +74,7 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     """Промежуточная модель для связи рецепта и ингредиента с количеством."""
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -97,6 +101,7 @@ class RecipeIngredient(models.Model):
 
 class Favorite(models.Model):
     """Модель избранных рецептов пользователя."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -119,6 +124,7 @@ class Favorite(models.Model):
 
 class ShoppingCart(models.Model):
     """Модель корзины покупок, связывает пользователя с рецептами."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

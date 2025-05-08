@@ -15,6 +15,7 @@ from recipes.models import (
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для модели ингредиента."""
+
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
@@ -22,6 +23,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор для модели тега."""
+
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
@@ -29,6 +31,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientInRecipeWriteSerializer(serializers.Serializer):
     """Сериализатор для записи ингредиента в рецепте (id и количество)."""
+
     id = serializers.IntegerField()
     amount = serializers.IntegerField(validators=[MinValueValidator(1)])
 
@@ -38,6 +41,7 @@ class IngredientInRecipeReadSerializer(serializers.ModelSerializer):
     Сериализатор для чтения ингредиента в рецепте с данными из связанной
     модели.
     """
+
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
@@ -55,6 +59,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     Сериализатор для создания и обновления рецептов с валидацией ингредиентов
     и тегов.
     """
+
     ingredients = serializers.SerializerMethodField()
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -190,6 +195,7 @@ class RecipeResponseSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения рецептов (чтение), включает вложенные данные.
     """
+
     ingredients = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
@@ -232,6 +238,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
     """
     Краткий сериализатор рецепта — для отображения в избранном или корзине.
     """
+
     image = Base64ImageField()
 
     class Meta:
@@ -244,6 +251,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
     Сериализатор для модели избранного рецепта.
     Используется при добавлении/удалении.
     """
+
     class Meta:
         model = Favorite
         fields = ('id', 'user', 'recipe')
@@ -260,6 +268,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     Сериализатор для модели корзины покупок.
     Используется при добавлении/удалении.
     """
+
     class Meta:
         model = ShoppingCart
         fields = ('id', 'user', 'recipe')
