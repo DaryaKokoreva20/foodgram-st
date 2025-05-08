@@ -199,7 +199,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Favorite
-        fields = ('id', 'user', 'recipe')
+        fields = ('user', 'recipe')
         read_only_fields = ('user', 'recipe')
 
     def create(self, validated_data):
@@ -216,8 +216,8 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShoppingCart
-        fields = ('id', 'user', 'recipe')
-        read_only_fields = ('user',)
+        fields = ('user', 'recipe')
+        read_only_fields = ('user', 'recipe')
 
     def create(self, validated_data):
         request = self.context['request']
