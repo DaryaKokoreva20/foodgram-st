@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import User, Follow
+from users.models import User
 from recipes.models import Recipe
 from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer,
@@ -24,9 +24,9 @@ class CustomUserSerializer(DjoserUserSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         user = request.user if request else None
-        if not user or not user.is_authenticated:
-            return False
-        return Follow.objects.filter(user=user, author=obj).exists()
+        return user and user.is_authenticated and user.follower.filter(
+            author=obj
+        ).exists()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -72,9 +72,9 @@ class UserListSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         user = request.user if request else None
-        if not user or not user.is_authenticated:
-            return False
-        return Follow.objects.filter(user=user, author=obj).exists()
+        return user and user.is_authenticated and user.follower.filter(
+            author=obj
+        ).exists()
 
 
 class UserAvatarSerializer(serializers.ModelSerializer):
@@ -119,9 +119,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         user = request.user if request else None
-        if not user or not user.is_authenticated:
-            return False
-        return Follow.objects.filter(user=user, author=obj).exists()
+        return user and user.is_authenticated and user.follower.filter(
+            author=obj
+        ).exists()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
