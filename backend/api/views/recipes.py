@@ -118,23 +118,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
-        recipes_in_cart = ShoppingCart.objects.filter(
-            user=request.user
-        ).values_list('recipe', flat=True)
-
         ingredients = RecipeIngredient.objects.filter(
-            recipe__in=recipes_in_cart
+            recipe__in_shopping_cart__user=request.user
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
         ).annotate(amount=Sum('amount'))
 
-        lines = []
-        for item in ingredients:
-            name = item['ingredient__name']
-            unit = item['ingredient__measurement_unit']
-            amount = item['amount']
-            lines.append(f'{name} ({unit}) — {amount}')
+        lines = [
+            f'{item["ingredient__name"]}'
+            ' ({item["ingredient__measurement_unit"]}) — {item["amount"]}'
+            for item in ingredients
+        ]
 
         content = '\n'.join(lines)
         response = HttpResponse(content, content_type='text/plain')
