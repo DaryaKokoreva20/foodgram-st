@@ -6,9 +6,18 @@ from django.db import models
 class User(AbstractUser):
     """Кастомная модель пользователя с уникальным идентификатором email."""
 
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
+    email = models.EmailField(
+        unique=True,
+        verbose_name='Электронная почта'
+    )
+    first_name = models.CharField(
+        max_length=150,
+        verbose_name='Имя'
+    )
+    last_name = models.CharField(
+        max_length=150,
+        verbose_name='Фамилия'
+    )
     avatar = models.ImageField(
         upload_to='avatars/',
         null=True,
@@ -27,10 +36,16 @@ class Follow(models.Model):
     """Модель подписки пользователя на авторов рецептов."""
 
     user = models.ForeignKey(
-        User, related_name='follower', on_delete=models.CASCADE
+        User,
+        related_name='follower',
+        on_delete=models.CASCADE,
+        verbose_name='Подписчик'
     )
     author = models.ForeignKey(
-        User, related_name='following', on_delete=models.CASCADE
+        User,
+        related_name='following',
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
 
     class Meta:
