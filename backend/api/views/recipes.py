@@ -118,25 +118,31 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
-        ingredients = RecipeIngredient.objects.filter(
-            recipe__in_shopping_cart__user=request.user
-        ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(amount=Sum('amount'))
+        ingredients = self._get_aggregated_ingredients(request.user)
+        content = self._format_ingredients_for_download(ingredients)
 
-        lines = [
-            f'{item["ingredient__name"]}'
-            ' ({item["ingredient__measurement_unit"]}) — {item["amount"]}'
-            for item in ingredients
-        ]
-
-        content = '\n'.join(lines)
         response = HttpResponse(content, content_type='text/plain')
         response['Content-Disposition'] = (
             'attachment; filename="shopping_list.txt"'
         )
         return response
+
+    @staticmethod
+    def _get_aggregated_ingredients(user):
+        return RecipeIngredient.objects.filter(
+            recipe__in_shopping_cart__user=user
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).annotate(amount=Sum('amount'))
+
+    @staticmethod
+    def _format_ingredients_for_download(ingredients):
+        return '\n'.join([
+            f'{item["ingredient__name"]}'
+            ' ({item["ingredient__measurement_unit"]}) — {item["amount"]}'
+            for item in ingredients
+        ])
 
     @action(
         detail=True,
