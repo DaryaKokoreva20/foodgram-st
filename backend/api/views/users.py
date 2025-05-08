@@ -136,9 +136,8 @@ class CustomUserViewSet(UserViewSet):
                 status=status.HTTP_201_CREATED
             )
 
-        follow = Follow.objects.filter(user=user, author=author)
-        if follow.exists():
-            follow.delete()
+        deleted, _ = Follow.objects.filter(user=user, author=author).delete()
+        if deleted:
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             {'errors': 'Вы не подписаны на этого автора'},
