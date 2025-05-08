@@ -79,14 +79,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             'pub_date'
         )
 
-    def get_author(self, obj):
-        from api.serializers.users import UserListSerializer
-        return UserListSerializer(obj.author, context=self.context).data
-
-    def get_ingredients(self, obj):
-        ingredients = RecipeIngredient.objects.filter(recipe=obj)
-        return IngredientInRecipeReadSerializer(ingredients, many=True).data
-
     def validate(self, data):
         if not data.get('image'):
             raise serializers.ValidationError(
