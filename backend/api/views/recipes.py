@@ -12,7 +12,7 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
-from api.filters import IngredientFilter
+from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers.recipes import (
     FavoriteCreateSerializer,
@@ -51,6 +51,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -163,19 +165,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return self._handle_delete_action(
             Favorite, user, recipe, 'Рецепта не было в избранном.'
         )
-
-    def get_queryset(self):
-        queryset = Recipe.objects.all()
-        user = self.request.user
-        params = self.request.query_params
-
-        if params.get('is_favorited') == '1' and user.is_authenticated:
-            queryset = queryset.filter(favorited_by__user=user)
-
-        if params.get('is_in_shopping_cart') == '1' and user.is_authenticated:
-            queryset = queryset.filter(in_shopping_cart__user=user)
-
-        if params.get('author'):
-            queryset = queryset.filter(author__id=params.get('author'))
-
-        return queryset
