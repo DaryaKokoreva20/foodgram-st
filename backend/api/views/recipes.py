@@ -1,21 +1,32 @@
-from rest_framework import viewsets
-from recipes.models import (
-    Ingredient, Tag, Recipe, Favorite, ShoppingCart, RecipeIngredient
-)
-from api.serializers.recipes import (
-    IngredientSerializer, TagSerializer, RecipeSerializer,
-    ShoppingCartSerializer, FavoriteSerializer, RecipeResponseSerializer,
-    RecipeShortSerializer
-)
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import permissions
-from django.http import HttpResponse
 from django.db.models import Sum
+from django.http import HttpResponse
+from django_filters.rest_framework import (
+    CharFilter,
+    DjangoFilterBackend,
+    FilterSet,
+)
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
-from django_filters.rest_framework import FilterSet, CharFilter
-from django_filters.rest_framework import DjangoFilterBackend
+
+from api.serializers.recipes import (
+    FavoriteSerializer,
+    IngredientSerializer,
+    RecipeResponseSerializer,
+    RecipeSerializer,
+    RecipeShortSerializer,
+    ShoppingCartSerializer,
+    TagSerializer,
+)
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag,
+)
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):

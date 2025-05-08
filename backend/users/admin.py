@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Follow
+
+from users.models import Follow, User
 
 
 @admin.register(User)

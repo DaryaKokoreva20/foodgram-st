@@ -1,13 +1,14 @@
 from rest_framework import serializers
-from users.models import User
-from recipes.models import Recipe
 from djoser.serializers import (
-    UserCreateSerializer as DjoserUserCreateSerializer,
     SetPasswordSerializer,
-    UserSerializer as DjoserUserSerializer
+    UserCreateSerializer as DjoserUserCreateSerializer,
+    UserSerializer as DjoserUserSerializer,
 )
-from api.serializers.recipes import RecipeShortSerializer
+
 from api.fields import Base64ImageField
+from api.serializers.recipes import RecipeShortSerializer
+from recipes.models import Recipe
+from users.models import User
 
 
 class CustomUserSerializer(DjoserUserSerializer):

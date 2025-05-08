@@ -1,22 +1,19 @@
 from djoser.views import UserViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from users.models import Follow
-from users.models import User
 from api.serializers.users import (
-    CustomUserSerializer,
-    CustomUserCreateSerializer,
     CustomSetPasswordSerializer,
+    CustomUserCreateSerializer,
+    CustomUserSerializer,
     SubscriptionSerializer,
+    UserAvatarSerializer,
     UserListSerializer,
-    UserAvatarSerializer
 )
-
-from rest_framework import status
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from users.models import Follow, User
 
 
 class CustomUserViewSet(UserViewSet):
