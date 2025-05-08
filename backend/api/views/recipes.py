@@ -5,7 +5,11 @@ from django_filters.rest_framework import (
 )
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly
+)
 from rest_framework.response import Response
 
 from api.filters import IngredientFilter
@@ -46,13 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-
-    def get_permissions(self):
-        if self.action in ['create']:
-            return [IsAuthenticated()]
-        if self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAuthenticated(), IsAuthorOrReadOnly()]
-        return [AllowAny()]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
 
     def perform_create(self, serializer):
         recipe = serializer.save(author=self.request.user)
