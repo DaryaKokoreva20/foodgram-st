@@ -103,13 +103,6 @@ class SubscriptionSerializer(CustomUserSerializer):
             'recipes_count',
         )
 
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        user = request.user if request else None
-        return user and user.is_authenticated and user.follower.filter(
-            author=obj
-        ).exists()
-
     def get_recipes(self, obj):
         request = self.context.get('request')
         limit = request.query_params.get('recipes_limit') if request else None
