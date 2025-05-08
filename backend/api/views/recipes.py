@@ -69,6 +69,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data, status=status_code)
 
+    @staticmethod
+    def _handle_post_action(request, recipe, serializer_class):
+        serializer = serializer_class(
+            data={'recipe': recipe.id},
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @staticmethod
+    def _handle_delete_action(model_class, user, recipe, not_found_message):
+        deleted, _ = model_class.objects.filter(
+            user=user, recipe=recipe
+        ).delete()
+        if deleted:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'detail': not_found_message},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -81,22 +103,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if request.method == 'POST':
-            serializer = ShoppingCartCreateSerializer(
-                data={'recipe': recipe.id},
-                context={'request': request}
+            return self._handle_post_action(
+                request, recipe, ShoppingCartCreateSerializer
             )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        deleted, _ = ShoppingCart.objects.filter(
-            user=user, recipe=recipe
-        ).delete()
-        if deleted:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            {'detail': 'Рецепта не было в корзине.'},
-            status=status.HTTP_400_BAD_REQUEST
+        return self._handle_delete_action(
+            ShoppingCart, user, recipe, 'Рецепта не было в корзине.'
         )
 
     @action(
@@ -143,23 +155,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if request.method == 'POST':
-            serializer = FavoriteCreateSerializer(
-                data={'recipe': recipe.id},
-                context={'request': request}
+            return self._handle_post_action(
+                request, recipe, FavoriteCreateSerializer
             )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        deleted, _ = Favorite.objects.filter(user=user, recipe=recipe).delete()
-        if deleted:
-            return Response(
-                {'detail': 'Рецепт удалён из избранного.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-        return Response(
-            {'detail': 'Рецепта не было в избранном.'},
-            status=status.HTTP_400_BAD_REQUEST
+        return self._handle_delete_action(
+            Favorite, user, recipe, 'Рецепта не было в избранном.'
         )
 
     def get_queryset(self):
