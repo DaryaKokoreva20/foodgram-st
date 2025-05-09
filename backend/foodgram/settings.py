@@ -133,7 +133,6 @@ DJOSER = {
         'user': 'api.serializers.users.CustomUserSerializer',
         'user_create': 'api.serializers.users.CustomUserCreateSerializer',
         'current_user': 'api.serializers.users.CustomUserSerializer',
-        'set_password': 'api.serializers.users.CustomSetPasswordSerializer',
     },
     'SET_PASSWORD_RETYPE': False,
 }
