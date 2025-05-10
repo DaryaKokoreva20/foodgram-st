@@ -5,6 +5,9 @@ Django settings for foodgram project.
 import os
 from pathlib import Path
 
+from constants import INGREDIENTS_PAGE_SIZE
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -144,8 +147,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 6,
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.IngredientPagination',
+    'PAGE_SIZE': INGREDIENTS_PAGE_SIZE,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 

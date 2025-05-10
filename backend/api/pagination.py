@@ -1,6 +1,8 @@
 from rest_framework.pagination import PageNumberPagination
 
-INGREDIENTS_PAGE_SIZE = 6
+from constants import (
+    INGREDIENTS_PAGE_SIZE
+)
 
 
 class IngredientPagination(PageNumberPagination):

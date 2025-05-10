@@ -6,6 +6,10 @@ from django.core.validators import (
 from rest_framework import serializers
 
 from api.fields import Base64ImageField
+from constants import (
+    MIN_INGREDIENT_AMOUNT,
+    MAX_INGREDIENT_AMOUNT
+)
 from recipes.models import (
     Favorite,
     Ingredient,
@@ -13,9 +17,6 @@ from recipes.models import (
     RecipeIngredient,
     ShoppingCart,
 )
-
-MIN_INGREDIENT_AMOUNT = 1
-MAX_INGREDIENT_AMOUNT = 10000
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -226,9 +227,7 @@ class FavoriteCreateSerializer(serializers.ModelSerializer):
         return Favorite.objects.create(user=user, recipe=recipe)
 
     def to_representation(self, instance):
-        return RecipeShortSerializer(
-            instance.recipe, context=self.context
-        ).data
+        return super().to_representation(instance)
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):

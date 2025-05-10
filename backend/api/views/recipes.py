@@ -49,7 +49,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     скачивание).
     """
 
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.all().distinct()
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
@@ -161,9 +161,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if request.method == 'POST':
-            return self._handle_post_action(
-                request, recipe, FavoriteCreateSerializer
+            serializer = FavoriteCreateSerializer(
+                data={'recipe': recipe.id},
+                context={'request': request}
             )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return self._short_response(recipe)
 
         return self._handle_delete_action(
             Favorite, user, recipe, 'Рецепта не было в избранном.'
