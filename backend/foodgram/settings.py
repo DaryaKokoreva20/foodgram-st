@@ -66,7 +66,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+"""DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 if os.getenv('USE_SQLITE', 'false').lower() == 'true':
     DATABASES = {
@@ -85,7 +85,16 @@ else:
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
         }
+    }"""
+
+DEBUG = True
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -151,9 +160,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': INGREDIENTS_PAGE_SIZE,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
-
-
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'backend', 'nginx']
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost",
