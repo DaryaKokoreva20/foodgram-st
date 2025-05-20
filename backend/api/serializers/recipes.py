@@ -128,7 +128,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
 
         if ingredients_data is not None:
-            instance.ingredient_links.all().delete()
+            instance.recipe_ingredients.all().delete()
             self.create_ingredients(instance, ingredients_data)
 
         return instance
@@ -174,7 +174,7 @@ class RecipeResponseSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
         return (
-            user.is_authenticated and user.shopping_cart.filter(
+            user.is_authenticated and user.shopping_carts.filter(
                 recipe=obj
             ).exists()
         )

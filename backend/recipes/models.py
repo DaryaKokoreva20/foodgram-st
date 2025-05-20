@@ -96,13 +96,13 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient_links',
+        related_name='recipe_ingredients',
         verbose_name='Рецепт'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='recipe_links',
+        related_name='ingredient_recipes',
         verbose_name='Ингредиент'
     )
     amount = models.PositiveIntegerField(
@@ -147,8 +147,6 @@ class UserRecipeRelation(models.Model):
     def __str__(self):
         return f'{self.user} — {self.recipe}'
 
-        return f"{self.user} — {self.recipe}"
-
 
 class Favorite(UserRecipeRelation):
     """Модель избранных рецептов пользователя."""
@@ -163,7 +161,7 @@ class Favorite(UserRecipeRelation):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favorite_entries',
+        related_name='favorites',
         verbose_name='Рецепт'
     )
 
@@ -184,7 +182,7 @@ class ShoppingCart(UserRecipeRelation):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='shopping_cart',
+        related_name='shopping_carts',
         verbose_name='Пользователь'
     )
 
