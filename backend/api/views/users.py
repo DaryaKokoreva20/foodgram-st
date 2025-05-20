@@ -39,10 +39,7 @@ class CustomUserViewSet(UserViewSet):
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         """Возвращает список авторов, на которых подписан пользователь."""
-        follows = Follow.objects.filter(
-            user=request.user
-        ).select_related('author')
-        authors = User.objects.filter(following__in=follows).distinct()
+        authors = User.objects.filter(following__user=request.user)
 
         page = self.paginate_queryset(authors)
         serializer = SubscriptionSerializer(
@@ -97,7 +94,7 @@ class CustomUserViewSet(UserViewSet):
 
         if request.method == 'POST':
             serializer = SubscriptionCreateSerializer(
-                data={'author': author.id},
+                data={'author': author.id, 'user': user.id},
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
