@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from djoser.serializers import (
-    SetPasswordSerializer,
     UserCreateSerializer as DjoserUserCreateSerializer,
     UserSerializer as DjoserUserSerializer,
 )
@@ -79,19 +78,6 @@ class UserAvatarSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('avatar',)
-
-
-class CustomSetPasswordSerializer(SetPasswordSerializer):
-    """Сериализатор для смены пароля пользователем."""
-
-    current_password = serializers.CharField(required=True, write_only=True)
-    new_password = serializers.CharField(required=True, write_only=True)
-
-    class Meta:
-        fields = ('current_password', 'new_password')
-
-    def to_representation(self, instance):
-        return {"new_password": self.validated_data["new_password"]}
 
 
 class SubscriptionSerializer(CustomUserSerializer):

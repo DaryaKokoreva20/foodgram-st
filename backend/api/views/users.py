@@ -1,4 +1,5 @@
 from djoser.views import UserViewSet
+from djoser.serializers import SetPasswordSerializer
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -9,7 +10,6 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 
 from api.serializers.users import (
-    CustomSetPasswordSerializer,
     CustomUserCreateSerializer,
     CustomUserSerializer,
     SubscriptionCreateSerializer,
@@ -28,10 +28,10 @@ class CustomUserViewSet(UserViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
+        if self.action == 'set_password':
+            return SetPasswordSerializer
         if self.action == 'create':
             return CustomUserCreateSerializer
-        if self.action == 'set_password':
-            return CustomSetPasswordSerializer
         if self.action in ('retrieve', 'list', 'me'):
             return UserListSerializer
         return CustomUserSerializer
