@@ -123,17 +123,13 @@ class SubscriptionSerializer(CustomUserSerializer):
 class SubscriptionCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания подписки на пользователя."""
 
-    user = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        write_only=True
-    )
-
     class Meta:
         model = Follow
         fields = ('author', 'user')
+        read_only_fields = ('user',)
 
     def validate(self, data):
-        user = data['user']
+        user = self.context['request'].user
         author = data['author']
         if user == author:
             raise serializers.ValidationError(
@@ -143,10 +139,8 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Вы уже подписаны на этого пользователя.'
             )
+        data['user'] = user
         return data
-
-    def create(self, validated_data):
-        return Follow.objects.create(**validated_data)
 
     def to_representation(self, instance):
         return SubscriptionSerializer(
