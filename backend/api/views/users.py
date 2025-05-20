@@ -2,7 +2,10 @@ from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly
+)
 from rest_framework.response import Response
 
 from api.serializers.users import (
@@ -22,27 +25,7 @@ class CustomUserViewSet(UserViewSet):
 
     queryset = User.objects.all()
     lookup_field = 'pk'
-
-    permission_classes_by_action = {
-        'retrieve': [AllowAny],
-        'me': [IsAuthenticated],
-        'list': [AllowAny],
-        'subscriptions': [IsAuthenticated],
-        'subscribe': [IsAuthenticated],
-        'set_password': [IsAuthenticated],
-        'update_avatar': [IsAuthenticated],
-    }
-
-    def get_permissions(self):
-        try:
-            return [
-                permission(
-                ) for permission in self.permission_classes_by_action[
-                    self.action
-                ]
-            ]
-        except KeyError:
-            return super().get_permissions()
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -52,16 +35,6 @@ class CustomUserViewSet(UserViewSet):
         if self.action in ('retrieve', 'list', 'me'):
             return UserListSerializer
         return CustomUserSerializer
-
-    @action(["post"], detail=False, permission_classes=[IsAuthenticated])
-    def set_password(self, request, *args, **kwargs):
-        """Позволяет авторизованному пользователю сменить пароль."""
-        serializer = CustomSetPasswordSerializer(
-            data=request.data, context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):

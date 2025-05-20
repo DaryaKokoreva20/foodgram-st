@@ -87,15 +87,11 @@ class CustomSetPasswordSerializer(SetPasswordSerializer):
     current_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)
 
-    def save(self, **kwargs):
-        user = self.context['request'].user
-        password = self.validated_data['new_password']
-        user.set_password(password)
-        user.save()
-        return user
+    class Meta:
+        fields = ('current_password', 'new_password')
 
-    def validate(self, attrs):
-        return super().validate(attrs)
+    def to_representation(self, instance):
+        return {"new_password": self.validated_data["new_password"]}
 
 
 class SubscriptionSerializer(CustomUserSerializer):

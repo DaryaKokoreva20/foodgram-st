@@ -136,8 +136,17 @@ DJOSER = {
         'user': 'api.serializers.users.CustomUserSerializer',
         'user_create': 'api.serializers.users.CustomUserCreateSerializer',
         'current_user': 'api.serializers.users.CustomUserSerializer',
+        'set_password': 'api.serializers.users.CustomSetPasswordSerializer',
     },
     'SET_PASSWORD_RETYPE': False,
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.AllowAny'],
+        'user': ['rest_framework.permissions.AllowAny'],
+        'user_create': ['rest_framework.permissions.AllowAny'],
+        'user_delete': ['rest_framework.permissions.IsAdminUser'],
+        'current_user': ['rest_framework.permissions.IsAuthenticated'],
+        'set_password': ['rest_framework.permissions.IsAuthenticated'],
+    },
 }
 
 REST_FRAMEWORK = {
