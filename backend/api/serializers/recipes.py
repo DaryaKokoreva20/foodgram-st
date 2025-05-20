@@ -16,6 +16,7 @@ from recipes.models import (
     Recipe,
     RecipeIngredient,
     ShoppingCart,
+    User
 )
 
 
@@ -210,24 +211,27 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class FavoriteCreateSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        write_only=True
+    )
+
     class Meta:
         model = Favorite
-        fields = ('recipe',)
+        fields = ('recipe', 'user')
 
     def validate(self, data):
-        user = self.context['request'].user
+        user = data['user']
         recipe = data['recipe']
         if Favorite.objects.filter(user=user, recipe=recipe).exists():
             raise serializers.ValidationError('Рецепт уже в избранном.')
         return data
 
-    def create(self, validated_data):
-        user = self.context['request'].user
-        recipe = validated_data['recipe']
-        return Favorite.objects.create(user=user, recipe=recipe)
-
     def to_representation(self, instance):
-        return super().to_representation(instance)
+        return RecipeShortSerializer(
+            instance.recipe,
+            context=self.context
+        ).data
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):

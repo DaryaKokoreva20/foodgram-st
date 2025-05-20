@@ -60,6 +60,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeResponseSerializer
         return RecipeSerializer
 
+    def get_serializer_context(self):
+        return {'request': self.request}
+
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_short_link(self, request, pk=None):
         base_url = request.build_absolute_uri('/')[:-1]
@@ -75,7 +78,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @staticmethod
     def _handle_post_action(request, recipe, serializer_class):
         serializer = serializer_class(
-            data={'recipe': recipe.id},
+            data={'recipe': recipe.id, 'user': request.user.id},
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
@@ -162,7 +165,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             serializer = FavoriteCreateSerializer(
-                data={'recipe': recipe.id},
+                data={'recipe': recipe.id, 'user': user.id},
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
