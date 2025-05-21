@@ -244,11 +244,6 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         fields = ('user', 'recipe')
         read_only_fields = ('user', 'recipe')
 
-    def create(self, validated_data):
-        request = self.context['request']
-        recipe = self.context['view'].get_object()
-        return ShoppingCart.objects.create(user=request.user, recipe=recipe)
-
 
 class ShoppingCartCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -260,12 +255,8 @@ class ShoppingCartCreateSerializer(serializers.ModelSerializer):
         recipe = data['recipe']
         if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
             raise serializers.ValidationError('Рецепт уже в корзине.')
+        data['user'] = user
         return data
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        recipe = validated_data['recipe']
-        return ShoppingCart.objects.create(user=user, recipe=recipe)
 
     def to_representation(self, instance):
         return RecipeShortSerializer(
