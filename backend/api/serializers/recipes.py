@@ -64,7 +64,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     и тегов.
     """
 
-    ingredients = IngredientInRecipeWriteSerializer(many=True)
+    ingredients = IngredientInRecipeWriteSerializer(many=True, write_only=True)
     author = serializers.SerializerMethodField()
     image = Base64ImageField()
 
@@ -80,6 +80,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             'ingredients',
             'pub_date'
         )
+        read_only_fields = ('author', 'pub_date')
+        extra_kwargs = {
+            'ingredients': {'read_only': True}
+        }
 
     def validate_image(self, image):
         if self.instance is None and not image:
@@ -87,7 +91,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return image
 
     def validate(self, data):
-        ingredients_data = self.initial_data.get('ingredients')
+        ingredients_data = data.get('ingredients')
         if not isinstance(ingredients_data, list):
             raise ValidationError({'ingredients': 'Неверный формат данных.'})
 
@@ -106,7 +110,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
-        validated_data.pop('author', None)
         user = self.context['request'].user
         recipe = Recipe.objects.create(author=user, **validated_data)
         self.create_ingredients(recipe, ingredients_data)
@@ -124,14 +127,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create(recipe_ingredients)
 
     def update(self, instance, validated_data):
-        ingredients_data = validated_data.pop('ingredients', None)
-
+        ingredients_data = validated_data.pop('ingredients')
         instance = super().update(instance, validated_data)
-
-        if ingredients_data is not None:
-            instance.recipe_ingredients.all().delete()
-            self.create_ingredients(instance, ingredients_data)
-
+        instance.recipe_ingredients.all().delete()
+        self.create_ingredients(instance, ingredients_data)
         return instance
 
     def to_representation(self, instance):
