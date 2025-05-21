@@ -5,7 +5,7 @@ from djoser.serializers import (
 )
 
 from api.fields import Base64ImageField
-from api.serializers.recipes import RecipeShortSerializer
+from api.serializers.recipe_short import RecipeShortSerializer
 from recipes.models import Recipe
 from users.models import User, Follow
 

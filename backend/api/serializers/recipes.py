@@ -6,6 +6,8 @@ from django.core.validators import (
 from rest_framework import serializers
 
 from api.fields import Base64ImageField
+from api.serializers.users import UserListSerializer
+from api.serializers.recipe_short import RecipeShortSerializer
 from constants import (
     MIN_INGREDIENT_AMOUNT,
     MAX_INGREDIENT_AMOUNT
@@ -143,7 +145,7 @@ class RecipeResponseSerializer(serializers.ModelSerializer):
     """
 
     ingredients = serializers.SerializerMethodField()
-    author = serializers.SerializerMethodField()
+    author = UserListSerializer(read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField()
@@ -154,10 +156,6 @@ class RecipeResponseSerializer(serializers.ModelSerializer):
             'id', 'author', 'name', 'image', 'text', 'cooking_time',
             'ingredients', 'is_favorited', 'is_in_shopping_cart'
         )
-
-    def get_author(self, obj):
-        from api.serializers.users import UserListSerializer
-        return UserListSerializer(obj.author, context=self.context).data
 
     def get_ingredients(self, obj):
         ingredients = RecipeIngredient.objects.filter(recipe=obj)
@@ -178,18 +176,6 @@ class RecipeResponseSerializer(serializers.ModelSerializer):
                 recipe=obj
             ).exists()
         )
-
-
-class RecipeShortSerializer(serializers.ModelSerializer):
-    """
-    Краткий сериализатор рецепта — для отображения в избранном или корзине.
-    """
-
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
